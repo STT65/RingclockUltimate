@@ -1,0 +1,1 @@
+{"mqttEnabled":false,"mqttBroker":"192.168.1.1","mqttPort":1883,"mqttUser":"","mqttPassword":"","mqttClientId":"ringclock","mqttTopicBase":"ringclock"}

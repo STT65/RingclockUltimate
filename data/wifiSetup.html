@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Ringclock WLAN-Setup</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        :root {
+            --bg: #0f0f0f;
+            --card: #1a1a1a;
+            --accent: #1e88ff;
+            --text: #eaeaea;
+            --text-dim: #9a9a9a;
+            --border: #333;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+        }
+
+        label {
+            display: block;
+            margin-top: 12px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #111;
+            color: var(--text);
+            font-size: 1rem;
+        }
+
+        .pass-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .pass-row input {
+            flex: 1;
+        }
+
+        .toggle-pass {
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: #111;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        button.primary {
+            margin-top: 16px;
+            padding: 12px 18px;
+            border-radius: 6px;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .status {
+            margin-top: 8px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        ul {
+            list-style: none;
+            padding-left: 0;
+            margin-top: 12px;
+        }
+
+        li {
+            background: #141414;
+            padding: 12px 14px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        li:hover {
+            background: #1f1f1f;
+        }
+
+        .ssid {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .rssi {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        .enc {
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-left: 8px;
+        }
+
+        @media (min-width: 768px) {
+            body {
+                max-width: 600px;
+                margin: 0 auto;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Ringclock WLAN-Setup</h1>
+
+    <div class="card">
+        <label for="ssid">WLAN name (SSID)</label>
+        <input type="text" id="ssid" placeholder="Netzwerk auswählen">
+
+        <label for="pass">Password</label>
+        <div class="pass-row">
+            <input type="password" id="pass" placeholder="WLAN-Passwort">
+            <button type="button" class="toggle-pass" id="togglePass">👁 Anzeigen</button>
+        </div>
+
+        <button class="primary" id="saveBtn">Speichern &amp; neu starten</button>
+        <div class="status" id="saveStatus"></div>
+    </div>
+
+    <div class="card">
+        <strong>Available networks</strong>
+        <div class="status" id="scanStatus">Suche nach Netzwerken…</div>
+        <ul id="scanList"></ul>
+    </div>
+
+    <script>
+        const scanStatus = document.getElementById('scanStatus');
+        const scanList = document.getElementById('scanList');
+        const saveBtn = document.getElementById('saveBtn');
+        const saveStatus = document.getElementById('saveStatus');
+        const ssidInput = document.getElementById('ssid');
+        const passInput = document.getElementById('pass');
+        const togglePassBtn = document.getElementById('togglePass');
+
+        function loadScan() {
+            fetch('/scan')
+                .then(r => r.json())
+                .then(msg => {
+                    if (msg.scanning) {
+                        scanStatus.textContent = "Suche nach Netzwerken…";
+                        setTimeout(loadScan, 1000);
+                    } else {
+                        renderScanResults(msg.scan || []);
+                    }
+                })
+                .catch(() => setTimeout(loadScan, 2000));
+        }
+
+        function renderScanResults(list) {
+            scanList.innerHTML = "";
+
+            if (!list.length) {
+                scanStatus.textContent = "Keine Netzwerke gefunden.";
+                return;
+            }
+
+            scanStatus.textContent = list.length + " Netzwerke gefunden";
+
+            list.sort((a, b) => b.rssi - a.rssi);
+
+            list.forEach(net => {
+                const li = document.createElement("li");
+
+                const ssidSpan = document.createElement("span");
+                ssidSpan.className = "ssid";
+                ssidSpan.textContent = net.ssid || "<versteckt>";
+
+                const right = document.createElement("span");
+                right.style.display = "flex";
+                right.style.alignItems = "center";
+
+                const rssiSpan = document.createElement("span");
+                rssiSpan.className = "rssi";
+                rssiSpan.textContent = net.rssi + " dBm";
+
+                const encSpan = document.createElement("span");
+                encSpan.className = "enc";
+                encSpan.textContent = (net.enc === 7 || net.enc === 0) ? "" : "🔒";
+
+                right.appendChild(rssiSpan);
+                right.appendChild(encSpan);
+
+                li.appendChild(ssidSpan);
+                li.appendChild(right);
+
+                li.addEventListener("click", () => {
+                    if (net.ssid) {
+                        ssidInput.value = net.ssid;
+                    }
+                });
+
+                scanList.appendChild(li);
+            });
+        }
+
+        saveBtn.addEventListener("click", () => {
+            const ssid = ssidInput.value.trim();
+            const pass = passInput.value;
+
+            if (!ssid) {
+                saveStatus.textContent = "Bitte eine SSID auswählen.";
+                return;
+            }
+
+            saveStatus.textContent = "Sende Daten…";
+
+            const formData = new FormData();
+            formData.append("ssid", ssid);
+            formData.append("pass", pass);
+
+            fetch("/saveWifi", {
+                method: "POST",
+                body: formData
+            })
+            .then(res => res.text())
+            .then(text => {
+                saveStatus.textContent = text || "Gespeichert, Gerät startet neu…";
+            })
+            .catch(err => {
+                console.error(err);
+                saveStatus.textContent = "Fehler beim Senden.";
+            });
+        });
+
+        togglePassBtn.addEventListener("click", () => {
+            if (passInput.type === "password") {
+                passInput.type = "text";
+                togglePassBtn.textContent = "🙈 Verbergen";
+            } else {
+                passInput.type = "password";
+                togglePassBtn.textContent = "👁 Anzeigen";
+            }
+        });
+
+        loadScan();
+    </script>
+
+</body>
+</html>

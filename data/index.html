@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Ringclock Ultimate</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header>
+        <h1>Ringclock Ultimate</h1>
+        <p class="subtitle">Configuration & Monitoring</p>
+    </header>
+
+    <nav class="tabs">
+        <button class="tab active" data-tab="brightness"
+            title="Configure manual and automatic brightness settings">Brightness</button>
+        <button class="tab" data-tab="ambient"
+            title="Adjust the background and orientation lighting layers">Ambient</button>
+        <button class="tab" data-tab="time" title="Configure the visual appearance of the clock hands">Time</button>
+        <button class="tab" data-tab="sfx" title="Manage special animation and light effects">Effects</button>
+        <button class="tab" data-tab="motor" title="Setup the stepper motor for mechanical time display">Motor</button>
+        <button class="tab" data-tab="night" title="Schedule automatic dimming for night time">Night</button>
+        <button class="tab" data-tab="mqtt" title="Configure the optional MQTT client for remote control">MQTT</button>
+        <button class="tab" data-tab="system" title="System status, power limits, and maintenance">System</button>
+    </nav>
+
+    <main>
+        <section id="brightness" class="tab-content active card">
+            <h2>System Brightness</h2>
+            <div class="row" style="margin-bottom: 30px;">
+                <label title="Turn on/off automatic brightness mode.">
+                    <input type="checkbox" id="autoBrightness"> Automatic Brightness
+                </label>
+            </div>
+
+            <div id="manualPanel">
+                <div class="grid-row" style="margin-bottom: 20px;">
+                    <div>
+                        <label title="Set the system brightness manually (0-255).">Manual Brightness:</label>
+                    </div>
+                    <div>
+                        <input type="range" id="manualBrightness" value="0" min="0" max="255">
+                    </div>
+                    <div class="grid-val">
+                        <span id="manualBrightnessVal">0</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <p>In <strong>Manual Brightness</strong>, the automatic light sensor is disabled, giving you direct,
+                        fixed
+                        control over the master brightness of the entire clock.</p>
+                    <ul>
+                        <li><strong>Value 255:</strong> The display runs at full, unthrottled brightness (only
+                            restricted by your global Power Limit).</li>
+                        <li><strong>Value 1 - 254:</strong> The overall light output is proportionally dimmed down.</li>
+                        <li><strong>Value 0:</strong> The display is completely turned off.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div id="autoPanel" style="display:none;">
+                <div class="grid-row">
+                    <div style="grid-column: span 2;">
+                        <label title="Current ambient light intensity measured in Lux.">Ambient Light [Lux]:</label>
+                    </div>
+                    <div class="grid-val">
+                        <span id="luxVal">0</span>
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div>
+                        <label title="The Lux level at which the display reaches maximum brightness.">Max Lux
+                            Threshold:</label>
+                    </div>
+                    <div>
+                        <input type="range" id="autoLuxMax" value="0" min="50" max="1000">
+                    </div>
+                    <div class="grid-val">
+                        <span id="autoLuxMaxVal">0</span>
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div>
+                        <label title="Maximum brightness level in automatic mode.">Max Brightness:</label>
+                    </div>
+                    <div>
+                        <input type="range" id="autoMax" value="0" min="0" max="255">
+                    </div>
+                    <div class="grid-val">
+                        <span id="autoMaxVal">0</span>
+                    </div>
+                </div>
+                <div class="grid-row" style="margin-bottom: 20px;">
+                    <div>
+                        <label title="Minimum brightness level in automatic mode.">Min Brightness:</label>
+                    </div>
+                    <div>
+                        <input type="range" id="autoMin" value="0" min="0" max="255">
+                    </div>
+                    <div class="grid-val">
+                        <span id="autoMinVal">0</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <p>In automatic mode, the clock dynamically adjusts its LED brightness based on the room's ambient
+                        light intensity. Here is how the parameters work together:</p>
+                    <ul>
+                        <li><strong>Ambient Light [Lux]:</strong> Displays the current ambient light intensity measured
+                            by the sensor in real-time.</li>
+                        <li><strong>Max Lux Threshold:</strong> The room light level at which the display should reach
+                            its maximum brightness. If the room gets brighter than this threshold, the clock will not
+                            increase its brightness any further.</li>
+                        <li><strong>Max Brightness:</strong> The absolute maximum brightness level the clock will use in
+                            automatic mode.</li>
+                        <li><strong>Min Brightness:</strong> The minimum brightness level the clock will drop to when
+                            the room is completely dark (0 Lux).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <section id="ambient" class="tab-content card">
+            <h2>Ambient & Markers</h2>
+            <div class="grid-row">
+                <div style="grid-column: span 2;">
+                    <label title="Enable the background ambient light layer.">
+                        <input type="checkbox" id="ambientEnabled"> Ambient Light
+                    </label>
+                </div>
+                <div>
+                    <input type="color" id="ambientColorPicker">
+                </div>
+            </div>
+            <div class="grid-row">
+                <div style="grid-column: span 2;">
+                    <label title="Display accent lights at every hour position (1-12).">
+                        <input type="checkbox" id="hourMarksEnabled"> Hour Markers
+                    </label>
+                </div>
+                <div>
+                    <input type="color" id="hourMarkColorPicker">
+                </div>
+            </div>
+            <div class="grid-row" style="margin-bottom: 30px;">
+                <div style="grid-column: span 2;">
+                    <label title="Display stronger accent lights at 12, 3, 6, and 9 o'clock.">
+                        <input type="checkbox" id="quarterMarksEnabled"> Quarter Markers
+                    </label>
+                </div>
+                <div>
+                    <input type="color" id="quarterMarkColorPicker">
+                </div>
+            </div>
+            <div class="info-box">
+                <p>The Ambient layer provides static background lighting to help orient the clock face. You can enable
+                    and colorize three different marker types, which are stacked on top of each other:</p>
+                <ul>
+                    <li><strong>Ambient Light:</strong> Illuminates all LEDs to create a solid,
+                        continuous background color.</li>
+                    <li><strong>Hour Markers:</strong> Places accent lights at every hour position. If
+                        enabled, these overwrite the base ambient color at their specific positions.</li>
+                    <li><strong>Quarter Markers:</strong> Places stronger accent lights at the 12, 3, 6, and 9
+                        o'clock positions. These have the highest priority and overwrite both the hour markers and the
+                        base ambient light.</li>
+                </ul>
+            </div>
+        </section>
+
+        <section id="time" class="tab-content card">
+            <h2>Time Layer</h2>
+
+            <div class="hand-config">
+                <h3>Second Hand</h3>
+                <div class="grid-row hand-color-row">
+                    <div class="color-group">
+                        <label title="Color of the hand pixel.">Hand Color</label>
+                        <input type="color" id="sHandCol">
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div class="color-group">
+                        <label title="Color at the end of the backward tail.">Back End</label>
+                        <input type="color" id="sTailBackEndCol">
+                    </div>
+                    <div class="color-group">
+                        <label title="Color where the tails start (below the hand pixel).">Tail Start</label>
+                        <input type="color" id="sTailStartCol">
+                    </div>
+                    <div class="color-group">
+                        <label title="Color at the end of the forward tail.">Fwd End</label>
+                        <input type="color" id="sTailFwdEndCol">
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div class="slider-group">
+                        <label title="Length of the backward tail.">Back length: <span
+                                id="sTailBackLenVal">0</span></label>
+                        <input type="range" id="sTailBackLen" value="0" min="0" max="11">
+                    </div>
+                    <div></div>
+                    <div class="slider-group">
+                        <label title="Length of the forward tail.">Fwd length: <span
+                                id="sTailFwdLenVal">0</span></label>
+                        <input type="range" id="sTailFwdLen" value="0" min="0" max="11">
+                    </div>
+                </div>
+                <div class="ring-selection">
+                    <label title="Show on ring 1"><input type="checkbox" class="ring-mask-check" data-hand="s"
+                            data-bit="0"> Ring 1</label>
+                    <label title="Show on ring 2"><input type="checkbox" class="ring-mask-check" data-hand="s"
+                            data-bit="1"> Ring 2</label>
+                    <label title="Show on ring 3"><input type="checkbox" class="ring-mask-check" data-hand="s"
+                            data-bit="2"> Ring 3</label>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="hand-config">
+                <h3>Minute Hand</h3>
+                <div class="grid-row hand-color-row">
+                    <div class="color-group">
+                        <label>Hand Color</label>
+                        <input type="color" id="mHandCol">
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div class="color-group">
+                        <label>Back End</label>
+                        <input type="color" id="mTailBackEndCol">
+                    </div>
+                    <div class="color-group">
+                        <label>Tail Start</label>
+                        <input type="color" id="mTailStartCol">
+                    </div>
+                    <div class="color-group">
+                        <label>Fwd End</label>
+                        <input type="color" id="mTailFwdEndCol">
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div class="slider-group">
+                        <label>Back length: <span id="mTailBackLenVal">0</span></label>
+                        <input type="range" id="mTailBackLen" value="0" min="0" max="11">
+                    </div>
+                    <div></div>
+                    <div class="slider-group">
+                        <label>Fwd length: <span id="mTailFwdLenVal">0</span></label>
+                        <input type="range" id="mTailFwdLen" value="0" min="0" max="11">
+                    </div>
+                </div>
+                <div class="ring-selection">
+                    <label><input type="checkbox" class="ring-mask-check" data-hand="m" data-bit="0"> Ring 1</label>
+                    <label><input type="checkbox" class="ring-mask-check" data-hand="m" data-bit="1"> Ring 2</label>
+                    <label><input type="checkbox" class="ring-mask-check" data-hand="m" data-bit="2"> Ring 3</label>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="hand-config">
+                <h3>Hour Hand</h3>
+                <div class="grid-row hand-color-row">
+                    <div class="color-group">
+                        <label>Hand Color</label>
+                        <input type="color" id="hHandCol">
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div class="color-group">
+                        <label>Back End</label>
+                        <input type="color" id="hTailBackEndCol">
+                    </div>
+                    <div class="color-group">
+                        <label>Tail Start</label>
+                        <input type="color" id="hTailStartCol">
+                    </div>
+                    <div class="color-group">
+                        <label>Fwd End</label>
+                        <input type="color" id="hTailFwdEndCol">
+                    </div>
+                </div>
+                <div class="grid-row">
+                    <div class="slider-group">
+                        <label>Back length: <span id="hTailBackLenVal">0</span></label>
+                        <input type="range" id="hTailBackLen" value="0" min="0" max="11">
+                    </div>
+                    <div></div>
+                    <div class="slider-group">
+                        <label>Fwd length: <span id="hTailFwdLenVal">0</span></label>
+                        <input type="range" id="hTailFwdLen" value="0" min="0" max="11">
+                    </div>
+                </div>
+                <div class="ring-selection">
+                    <label><input type="checkbox" class="ring-mask-check" data-hand="h" data-bit="0"> Ring 1</label>
+                    <label><input type="checkbox" class="ring-mask-check" data-hand="h" data-bit="1"> Ring 2</label>
+                    <label><input type="checkbox" class="ring-mask-check" data-hand="h" data-bit="2"> Ring 3</label>
+                </div>
+            </div>
+        </section>
+
+        <section id="sfx" class="tab-content card">
+            <h2>Special Effects (SFX)</h2>
+
+            <div class="grid-row" style="border-bottom: 1px solid #444; font-weight: bold;">
+                <div>Effect</div>
+                <div>Parameter</div>
+                <div>Manual Trigger</div>
+            </div>
+
+            <div class="grid-row">
+                <div>
+                    <label title="Simulates an electrical short circuit with flickering flashes.">Short Circuit</label>
+                </div>
+                <div class="sfx-param">
+                    <input title="Interval" type="range" id="sfxShortCircuitInterval" value="0" min="0" max="1440">
+                    <span id="sfxShortCircuitIntervalVal" class="sfx-val">off</span>
+                </div>
+                <div class="sfx-trigger">
+                    <button id="btnSfxShortCircuitTrigger">Trigger</button>
+                </div>
+            </div>
+
+            <div class="grid-row">
+                <div>
+                    <label title="Simulates a classic radar screen.">Radar</label>
+                </div>
+                <div class="sfx-param">
+                    <input title="Interval" type="range" id="sfxRadarInterval" value="0" min="0" max="1440">
+                    <span id="sfxRadarIntervalVal" class="sfx-val">off</span>
+                </div>
+                <div class="sfx-trigger">
+                    <button id="btnSfxRadarTrigger">Trigger</button>
+                </div>
+            </div>
+
+            <div class="grid-row" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #444;">
+                <div>
+                    <label title="Simulates a bright meteor that speeds across the dial.">Shooting Star</label>
+                </div>
+                <div class="sfx-param">
+                    <input title="Interval" type="range" id="sfxShootingStarInterval" value="0" min="0" max="1440">
+                    <span id="sfxShootingStarIntervalVal" class="sfx-val">off</span>
+                </div>
+                <div class="sfx-trigger">
+                    <button id="btnSfxShootingStarTrigger">Trigger</button>
+                </div>
+            </div>
+
+            <div class="grid-row">
+                <div>
+                    <label title="A rhythmic double-pulse that modulates the brightness for 5 seconds.">Heartbeat</label>
+                </div>
+                <div class="sfx-param">
+                    <input title="Interval" type="range" id="sfxHeartbeatInterval" value="0" min="0" max="1440">
+                    <span id="sfxHeartbeatIntervalVal" class="sfx-val">off</span>
+                </div>
+                <div class="sfx-trigger">
+                    <button id="btnSfxHeartbeatTrigger">Trigger</button>
+                </div>
+            </div>
+
+            <div class="grid-row" style="margin-bottom: 30px;">
+                <div>
+                    <label title="Intensity of the rhythmic double-pulse that modulates the brightness for 5 seconds.">Heartbeat Intensity</label>
+                </div>
+                <div class="sfx-param">
+                    <input title="Intensity (0=no modulation, 255=100 % brightness modulation)" type="range"
+                        id="sfxHeartbeatIntensity" value="0" min="0" max="255">
+                    <span id="sfxHeartbeatIntensityVal" class="sfx-val">0</span>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <p>Special effects are visual highlights that overlay the standard time display. All effects run for a
+                    fixed duration and can be triggered manually or at a configurable interval.</p>
+                <ul>
+                    <li><strong>Interval:</strong> The trigger logic is strictly aligned with midnight
+                        (0:00). <br>
+                        <em>Example:</em> <code>1h</code> triggers exactly at the top of every hour. <code>24h</code>
+                        starts the effect exactly at midnight.
+                    </li>
+                    <li><strong>Intensity:</strong> Controls the strength of a effect (1 = minimum, 255 =
+                        maximum).</li>
+                </ul>
+            </div>
+        </section>
+        <section id="motor" class="tab-content card">
+            <h2>Stepper Motor Setup</h2>
+
+            <div class="row">
+                <label
+                    title="Operating mode of the motor (off, hours, minutes, seconds, or homing / calibration).">Motor
+                    Mode:</label>
+                <select id="motorMode">
+                    <option value="0">Off</option>
+                    <option value="1">Hours</option>
+                    <option value="2">Minutes</option>
+                    <option value="3">Seconds</option>
+                    <option value="4">Homing</option>
+                </select>
+            </div>
+
+
+            <div id="motorEnabledPanel" style="display:none;">
+
+                <div id="motorGridPanel">
+                    <div class="row">
+                        <label title="Choose between smooth rotation or a time grid.">Time grid:</label>
+                        <div>
+                            <select id="motorGridH" style="display:none;">
+                                <option value="0">Analog (smooth)</option>
+                                <option value="1">¼h – 48 steps/rev</option>
+                                <option value="2">½h – 24 steps/rev</option>
+                                <option value="3">1h – 12 steps/rev</option>
+                                <option value="4">3h – 4 steps/rev</option>
+                            </select>
+                            <select id="motorGridM" style="display:none;">
+                                <option value="0">Analog (smooth)</option>
+                                <option value="1">15s – 240 steps/rev</option>
+                                <option value="2">30s – 120 steps/rev</option>
+                                <option value="3">1min – 60 steps/rev</option>
+                                <option value="4">5min – 12 steps/rev</option>
+                                <option value="5">15min – 4 steps/rev</option>
+                            </select>
+                            <select id="motorGridS" style="display:none;">
+                                <option value="0">Analog (smooth)</option>
+                                <option value="1">¼s – 240 steps/rev</option>
+                                <option value="2">½s – 120 steps/rev</option>
+                                <option value="3">1s – 60 steps/rev</option>
+                                <option value="4">5s – 12 steps/rev</option>
+                                <option value="5">15s – 4 steps/rev</option>
+                            </select>
+                        </div><!-- end select wrapper -->
+                    </div><!-- end .row -->
+                </div><!-- end motorGridPanel -->
+
+                <div id="motorGridOptionsPanel" style="display:none;">
+                    <div class="grid-row">
+                        <div>
+                            <label title="Maximum steps per second (50-400). Grid mode only.">MaxSpeed
+                                [Steps/s]:</label>
+                        </div>
+                        <div><input type="range" id="motorSpeed" value="50" min="50" max="600" step="50"></div>
+                        <div class="grid-val"><span id="motorSpeedVal">50</span></div>
+                    </div>
+                    <div class="grid-row" style="margin-bottom:20px;">
+                        <div>
+                            <label title="Acceleration in steps/s². Grid mode only.">Acceleration [Steps/s²]:</label>
+                        </div>
+                        <div><input type="range" id="motorAccel" value="50" min="50" max="8000" step="50"></div>
+                        <div class="grid-val"><span id="motorAccelVal">50</span></div>
+                    </div>
+
+                    <div id="motorMonitor" style="margin-top:16px;">
+                        <hr>
+                        <h3 style="margin-bottom:8px;">Grid Mode Monitor</h3>
+                        <div class="row"><label>Grid interval:</label><span id="gridInterval">–</span></div>
+                        <div class="row"><label>Ramp duration:</label><span id="rampDurationVal">–</span></div>
+                        <div class="row"><label>Steps moved:</label><span id="rampStepsVal">–</span></div>
+                        <div class="row"><label>Missed steps:</label><span id="rampMissedVal">–</span></div>
+                        <div id="motorWarning" class="warning-box" style="display:none;margin-top:10px;">
+                            ⚠️ <strong>Warning:</strong> The last ramp took <span id="warnDuration"></span> ms but the
+                            grid
+                            interval is only <span id="warnInterval"></span> ms.
+                            Increase <em>MaxSpeed</em> and/or <em>Acceleration</em>, or choose a coarser grid.
+                        </div>
+                    </div>
+                </div><!-- end motorGridOptionsPanel -->
+            </div><!-- end motorEnabledPanel -->
+
+            <div id="motorMainInfoBox" class="info-box" style="display:none;">
+                <strong>Stepper Motor - Mechanical Time Display</strong>
+                <p style="margin-top: 5px; margin-bottom: 10px; line-height: 1.4;">
+                    The stepper motor powers the mechanical heart of the ring clock.
+                    Adjust these settings to perfectly tune the movement dynamics to your personal preference.
+                </p>
+                <ul style="margin-top: 0; margin-bottom: 0; padding-left: 20px; line-height: 1.4;">
+                    <li><strong>Motor Mode:</strong> Determines what to do with the motor: off, show hours, minutes or
+                        seconds or do the homing procedure.</li>
+                    <li><strong>Time grid:</strong> This setting defines how the motor advances the time:
+                        <em>Analog (smooth):</em> The motor runs continuously at a constant speed, automatically
+                        synchronizing with the time source in the background. <em>Grid: </em> The motor snaps to
+                        discrete time positions based on your chosen distance. Each jump uses MaxSpeed and Acceleration
+                        settings to simulate a clean, mechanical stepping effect.
+                    </li>
+                    <li id="motorInfoGridParams" style="display:none;"><strong>MaxSpeed &amp; Acceleration:</strong>
+                        These parameters are used only for the Grid mode and
+                        define the maximum motor speed and acceleration to ensure smooth and optimal dynamics for the
+                        chosen grid mode.
+                    </li>
+                </ul>
+            </div>
+            <div id="homingPanel" style="display:none; margin-top:16px;">
+                <hr>
+                <h3 style="margin-bottom:8px;">Homing &amp; Zero Calibration</h3>
+                <div class="row" id="homingStatusRow">
+                    <label>Status:</label>
+                    <span id="homingStatusText">–</span>
+                </div>
+                <div id="homingControlsPanel" style="display:none; margin-top:14px;">
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:10px;">
+                        <button id="btnJogMinus100" title="Move 100 steps backward">&#9668;&#9668; 100</button>
+                        <button id="btnJogMinus10" title="Move 10 steps backward">&#9668; 10</button>
+                        <button id="btnJogMinus1" title="Move 1 step backward">&#9668; 1</button>
+                        <button id="btnJogPlus1" title="Move 1 step forward">1 &#9658;</button>
+                        <button id="btnJogPlus10" title="Move 10 steps forward">10 &#9658;</button>
+                        <button id="btnJogPlus100" title="Move 100 steps forward">100 &#9658;&#9658;</button>
+                    </div>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:12px;">
+                        <button id="btnAcceptPosition"
+                            title="Accept the current motor position as 12 o'clock, store the offset and save to flash.">&#10003;
+                            Accept &amp; Save</button>
+                        <button id="btnStartHoming" style="display:none;"
+                            title="Run the automatic Hall sensor homing sequence again.">&#8635; Run Homing</button>
+                    </div>
+                </div>
+                <div id="homingInfoSensor" class="info-box" style="display:none; margin-top:12px;">
+                    <strong>Sensor based homing procedure:</strong>
+                    <ol style="margin:8px 0 0; padding-left:20px; line-height:1.6;">
+                        <li>Wait until automatic homing completes (status: <em>Ready</em>).</li>
+                        <li>The hand should now be roughly at 12 o'clock.</li>
+                        <li>Use the jog buttons to fine-tune the position.</li>
+                        <li>If good, press <strong>Accept & Save</strong> to store the fine-tuning permanently.</li>
+                        <li>Now you can switch <em>Motor Mode</em> to the desired time display mode.</li>
+                    </ol>
+                </div>
+                <div id="homingInfoNoSensor" class="info-box" style="display:none; margin-top:12px;">
+                    <strong>Manual homing procedure (without position sensor):</strong>
+                    <ol style="margin:8px 0 0; padding-left:20px; line-height:1.6;">
+                        <li>Disconnect the clock from the power supply.</li>
+                        <li>Bring the motor shaft to the 12 o'clock position.</li>
+                        <li>Reconnect the clock to the power supply.</li>
+                        <li>While booting, the motor will be powered and snaps to a certain magnet position.</li>
+                        <li>Goto <em>Motor Mode=Homing</em> and use the jog buttons to fine-tune the position.</li>
+                        <li>If good, press <strong>Accept & Save</strong> to store the fine-tuning permanently.</li>
+                        <li>Now you can switch <em>Motor Mode</em> to the desired time display mode.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- ============================================================ -->
+        <!-- NIGHT MODE                                                    -->
+        <!-- ============================================================ -->
+        <section id="night" class="tab-content card">
+            <h2>Night Mode Schedule</h2>
+            <div class="row">
+                <label title="Enable automatic night mode during a specific time window.">
+                    <input type="checkbox" id="nightModeEnabled"> Enable Night Mode
+                </label>
+            </div>
+            <div class="row">
+                <label title="Time when night mode starts.">Start:</label>
+                <input type="time" id="nightStart">
+            </div>
+            <div class="row">
+                <label title="Time when night mode ends.">End:</label>
+                <input type="time" id="nightEnd">
+            </div>
+            <div class="row">
+                <label>Currently active:</label>
+                <span id="nightActiveStatus">-</span>
+            </div>
+
+            <h3>Features during night window</h3>
+            <div class="row">
+                <label title="Dim LEDs to the configured brightness level.">
+                    <input type="checkbox" id="nightDimLeds"> Dim LEDs
+                </label>
+                <span id="nightDimGroup" class="inline-slider">
+                    <input type="range" id="nightBrightness" value="0" min="0" max="255">
+                    <span id="nightBrightnessVal">0</span>
+                </span>
+            </div>
+            <div class="row">
+                <label title="Disable all SFX effects (radar, shooting star, heartbeat, short circuit).">
+                    <input type="checkbox" id="nightSfxOff"> Disable SFX effects
+                </label>
+            </div>
+            <div class="row">
+                <label title="Hide the second hand for a quieter display.">
+                    <input type="checkbox" id="nightSecondHandOff"> Hide second hand
+                </label>
+            </div>
+            <div class="row">
+                <label title="Park the stepper motor at 12 o'clock and stop it.">
+                    <input type="checkbox" id="nightMotorHome"> Park motor at 12 o'clock
+                </label>
+            </div>
+            <div class="row">
+                <label title="Hide hour and quarter-hour ambient markers.">
+                    <input type="checkbox" id="nightMarkersOff"> Hide ambient markers
+                </label>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- MQTT                                                          -->
+        <!-- ============================================================ -->
+        <section id="mqtt" class="tab-content card">
+            <h2>MQTT Client</h2>
+
+            <div class="row">
+                <label title="Enable or disable the MQTT client.">
+                    <input type="checkbox" id="mqttEnabled"> Enable MQTT
+                </label>
+                <span id="mqttStatusBadge" class="status-badge status-offline">Offline</span>
+            </div>
+
+            <hr>
+
+            <div class="row">
+                <label title="IP address or hostname of the MQTT broker.">Broker:</label>
+                <input type="text" id="mqttBroker" placeholder="192.168.1.10" class="field-fixed">
+            </div>
+            <div class="row">
+                <label title="Broker port (default 1883).">Port:</label>
+                <input type="number" id="mqttPort" value="1883" min="1" max="65535" class="field-fixed">
+            </div>
+            <div class="row">
+                <label title="MQTT username (leave empty for anonymous access).">Username:</label>
+                <input type="text" id="mqttUser" placeholder="optional" class="field-fixed">
+            </div>
+            <div class="row">
+                <label title="MQTT password.">Password:</label>
+                <input type="password" id="mqttPassword" placeholder="optional" class="field-fixed">
+            </div>
+            <div class="row">
+                <label title="MQTT client identifier — must be unique on the broker.">Client ID:</label>
+                <input type="text" id="mqttClientId" placeholder="ringclock" class="field-fixed">
+            </div>
+            <div class="row" style="margin-bottom:20px;">
+                <label title="Base topic prefix for all published and subscribed topics.">Topic Base:</label>
+                <input type="text" id="mqttTopicBase" placeholder="ringclock" class="field-fixed">
+            </div>
+
+            <div class="info-box">
+                <p><strong>Topic structure</strong> (base = Topic Base setting, default <code>ringclock</code>):</p>
+                <ul>
+                    <li><code>&lt;base&gt;/set/&lt;key&gt;</code> — write a setting (e.g.
+                        <code>ringclock/set/motorSpeed</code> → <code>200</code>)
+                    </li>
+                    <li><code>&lt;base&gt;/get/&lt;key&gt;</code> — read current value (publish to topic to request,
+                        device responds on same topic)</li>
+                    <li><code>&lt;base&gt;/cmd/save</code> — save settings to flash</li>
+                    <li><code>&lt;base&gt;/cmd/reboot</code> — reboot device</li>
+                    <li><code>&lt;base&gt;/cmd/resync</code> — resynchronise motor</li>
+                    <li><code>&lt;base&gt;/status/online</code> — <code>1</code> when connected,
+                        <code>0</code> as Last Will (retained)
+                    </li>
+                    <li><code>&lt;base&gt;/status/lux</code>, <code>current_mA</code>, <code>rssi</code>,
+                        <code>uptime</code> — published every second
+                    </li>
+                </ul>
+                <p>Settings are saved to <code>mqtt.json</code> separately from <code>settings.json</code> so they
+                    survive a LittleFS firmware update.</p>
+            </div>
+
+            <div class="button-group">
+                <button id="btnMqttSave" title="Apply and save MQTT settings immediately.">Apply &amp; Save
+                    MQTT</button>
+            </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <!-- SYSTEM                                                        -->
+        <!-- ============================================================ -->
+        <section id="system" class="tab-content card">
+            <h2>System &amp; Diagnostics</h2>
+            <div class="row">
+                <label title="Current local time on the device (including DST).">Local Time:</label>
+                <span id="localTimeVal">–</span>
+            </div>
+            <div class="row">
+                <label title="Time since the last device restart.">System Uptime:</label>
+                <span id="uptimeVal">0 s</span>
+            </div>
+            <div class="row">
+                <label title="Current IP address of the device.">IP Address:</label>
+                <span id="ipVal">0.0.0.0</span>
+            </div>
+            <div class="row">
+                <label title="WiFi signal strength in dBm.">Signal (RSSI):</label>
+                <span id="rssiVal">0 dBm</span>
+            </div>
+            <div class="row">
+                <label title="MQTT broker connection status.">MQTT:</label>
+                <span id="mqttStatusSystem">–</span>
+            </div>
+            <div class="row">
+                <label title="Estimated LED current draw.">Estimated Power:</label>
+                <span id="currentVal">0 mA</span>
+            </div>
+
+            <hr>
+
+            <div class="row" id="rowMotorAutoHoming" style="display:none">
+                <label title="Enable automatic zero-point homing via Hall sensor on startup (requires sensor hardware).">Auto Homing:</label>
+                <input type="checkbox" id="motorAutoHoming">
+            </div>
+            <div class="row">
+                <label title="Maximum current (mA) allowed for the LEDs. Brightness is throttled if exceeded.">Power
+                    Limit (mA):</label>
+                <input type="number" id="powerLimit" min="1000" max="5000" step="250" class="field-sm">
+            </div>
+            <div class="row">
+                <label title="Serial log verbosity (0=Off, 3=Debug).">Log Level:</label>
+                <select id="logLevel" class="field-sm">
+                    <option value="0">0 - Off</option>
+                    <option value="1">1 - Errors</option>
+                    <option value="2">2 - Info</option>
+                    <option value="3">3 - Debug</option>
+                </select>
+            </div>
+            <div class="row">
+                <label title="Timezone with automatic DST support.">Timezone:</label>
+                <select id="timezone" class="field-fixed">
+                    <option value="GMT0">UTC / GMT</option>
+                    <option value="WET0WEST,M3.5.0/1,M10.5.0">Western Europe (Portugal, UK)</option>
+                    <option value="CET-1CEST,M3.5.0,M10.5.0/3">Central Europe (DE, FR, IT, …)</option>
+                    <option value="EET-2EEST,M3.5.0/3,M10.5.0/4">Eastern Europe (GR, FI, EE, …)</option>
+                    <option value="MSK-3">Moscow (no DST)</option>
+                    <option value="EST5EDT,M3.2.0,M11.1.0">US Eastern</option>
+                    <option value="CST6CDT,M3.2.0,M11.1.0">US Central</option>
+                    <option value="MST7MDT,M3.2.0,M11.1.0">US Mountain</option>
+                    <option value="MST7">US Mountain (Arizona, no DST)</option>
+                    <option value="PST8PDT,M3.2.0,M11.1.0">US Pacific</option>
+                    <option value="AST4ADT,M3.2.0,M11.1.0">US Atlantic / Canada Atlantic</option>
+                    <option value="NST3:30NDT,M3.2.0,M11.1.0">Newfoundland</option>
+                    <option value="BRT3">Brazil (Brasilia, no DST)</option>
+                    <option value="ART3">Argentina (no DST)</option>
+                    <option value="IST-5:30">India (no DST)</option>
+                    <option value="PKT-5">Pakistan (no DST)</option>
+                    <option value="ICT-7">Indochina (TH, VN, no DST)</option>
+                    <option value="CST-8">China / Singapore (no DST)</option>
+                    <option value="JST-9">Japan / Korea (no DST)</option>
+                    <option value="AEST-10AEDT,M10.1.0,M4.1.0/3">Australia Eastern (NSW, VIC)</option>
+                    <option value="ACST-9:30ACDT,M10.1.0,M4.1.0/3">Australia Central (SA)</option>
+                    <option value="AWST-8">Australia Western (no DST)</option>
+                    <option value="NZST-12NZDT,M9.5.0,M4.1.0/3">New Zealand</option>
+                </select>
+            </div>
+            <div class="button-group">
+                <button id="btnSave" title="Save current settings permanently to flash.">Save Settings</button>
+                <button id="btnReboot" title="Trigger a hardware restart of the ESP8266.">Reboot Device</button>
+                <button id="btnWifiErase" title="Erase WiFi credentials and restart in AP setup mode.">Erase
+                    WiFi</button>
+                <button id="btnOtaFirmware"
+                    title="Open the OTA update page — flash firmware or filesystem (port 8080).">OTA Update</button>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

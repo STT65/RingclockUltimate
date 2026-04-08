@@ -1,0 +1,275 @@
+/* --- Base layout & navigation --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #111;
+    color: #eee;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+}
+
+header {
+    background: #222;
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #333;
+}
+
+.subtitle {
+    color: #888;
+    margin-top: -5px;
+    font-size: 0.9em;
+}
+
+.tabs {
+    display: flex;
+    background: #1a1a1a;
+    border-bottom: 2px solid #333;
+    overflow-x: auto;
+}
+
+.tab {
+    flex: 1;
+    padding: 15px 10px;
+    background: #1a1a1a;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.tab:hover { background: #252525; color: #fff; }
+.tab.active {
+    background: #333;
+    color: #4caf50;
+    border-bottom: 3px solid #4caf50;
+}
+
+/* --- Main content --- */
+main {
+    padding: 20px;
+    margin: 0 auto;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.card {
+    background: #222;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    margin-bottom: 20px;
+}
+
+h2, h3 { color: #4caf50; margin-top: 0; }
+
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+hr { border: 0; border-top: 1px solid #333; margin: 20px 0; }
+
+/* --- Time layer T-design grid --- */
+.hand-config {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+}
+
+.grid-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+    text-align: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+.grid-row > div:first-child { text-align: left; }
+.grid-val { text-align: right; }
+
+.hand-color-row .color-group {
+    grid-column: 2;
+}
+
+.color-group, .slider-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+}
+
+.color-group label, .slider-group label {
+    font-size: 0.7rem;
+    color: #888;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+/* --- Form elements --- */
+input[type="range"] {
+    width: 100%;
+    cursor: pointer;
+    accent-color: #4caf50;
+    background: rgba(76, 175, 80, 0.12);
+    border-radius: 4px;
+    height: 6px;
+}
+
+input[type="checkbox"] {
+    accent-color: #4caf50;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+input[type="color"] {
+    width: 55px; height: 40px;
+    border: none; cursor: pointer; background: transparent;
+}
+
+input[type="number"],
+input[type="text"],
+input[type="password"],
+input[type="time"],
+select {
+    padding: 8px;
+    background: #333;
+    border: 1px solid #444;
+    color: #fff;
+    border-radius: 4px;
+    font-size: 1rem;
+}
+
+input[type="time"] {
+    color-scheme: dark;
+}
+
+.field-fixed {
+    width: 300px;
+    box-sizing: border-box;
+    text-align: right;
+}
+
+.field-sm {
+    width: 150px;
+    box-sizing: border-box;
+    text-align: right;
+}
+
+#mqttPort::-webkit-inner-spin-button,
+#mqttPort::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+#mqttPort { -moz-appearance: textfield; appearance: textfield; }
+
+input[type="number"]:focus,
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="time"]:focus,
+select:focus {
+    outline: none;
+    border-color: #4caf50;
+}
+
+/* SFX parameter cell (slider + value label) */
+.sfx-param {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+.sfx-val {
+    font-size: 0.8rem;
+    width: 50px;
+    flex-shrink: 0;
+    text-align: left;
+}
+
+.sfx-trigger {
+    display: flex;
+    justify-content: center;
+}
+.sfx-trigger button {
+    max-width: 250px;
+}
+
+/* Inline slider (e.g. Dim LEDs + brightness in one row) */
+.inline-slider {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    margin-left: 14px;
+}
+.inline-slider.visible { display: flex; }
+.inline-slider input[type="range"] { flex: 1; }
+
+.ring-selection {
+    display: flex; gap: 15px; margin-top: 5px;
+}
+
+/* --- Buttons --- */
+.button-group { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+
+button {
+    flex: 1; padding: 12px; background: #30aa34ae; color: #eee;
+    border: none; border-radius: 5px; cursor: pointer;
+    font-weight: bold; transition: background 0.2s;
+}
+button:hover { background: #30aa34f9; }
+
+a button { width: 100%; }
+
+[title] { cursor: help; }
+
+/* --- Info box --- */
+.info-box {
+    background: #1a1a1a;
+    border-left: 4px solid #4CAF50;
+    padding: 15px;
+    margin-bottom: 25px;
+    border-radius: 0 4px 4px 0;
+    font-size: 0.85rem;
+    color: #ccc;
+}
+
+.info-box p  { margin-top: 0; margin-bottom: 10px; }
+.info-box ul { margin: 0 0 10px 0; padding-left: 20px; }
+.info-box ul:last-child { margin-bottom: 0; }
+
+.info-box code {
+    background: #333;
+    padding: 2px 5px;
+    border-radius: 3px;
+    color: #fff;
+    font-family: monospace;
+}
+
+/* --- Warning box (motor ramp monitor) --- */
+.warning-box {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    padding: 10px 14px;
+    color: #856404;
+    line-height: 1.5;
+}
+
+/* --- MQTT status badge --- */
+.status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+    letter-spacing: 0.03em;
+}
+
+.status-online  { background: #1b5e20; color: #a5d6a7; }
+.status-offline { background: #4a1515; color: #ef9a9a; }
