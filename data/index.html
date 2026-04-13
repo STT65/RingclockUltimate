@@ -13,6 +13,7 @@
     <header>
         <h1>Ringclock Ultimate</h1>
         <p class="subtitle">Configuration & Monitoring</p>
+        <button id="btnReload" title="Reload page" onclick="reconnect()">&#10227;</button>
     </header>
 
     <nav class="tabs">
@@ -35,6 +36,9 @@
                 <label title="Turn on/off automatic brightness mode.">
                     <input type="checkbox" id="autoBrightness"> Automatic Brightness
                 </label>
+                <span id="autoBrightnessMonitor" style="display:none; margin-left:16px;">
+                    <span id="autoBrightnessVal">0</span>
+                </span>
             </div>
 
             <div id="manualPanel">

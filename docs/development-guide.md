@@ -188,7 +188,27 @@ Navigate to `http://<device-ip>:8080/update` (port and path defined by `OTA_PORT
 | Firmware | `.pio/build/d1_mini/firmware.bin` |
 | Filesystem | `.pio/build/release/littlefs.bin` (use the `release` build!) |
 
-> Settings (`settings.json`, `mqtt.json`, `homing.json`) are preserved during a filesystem OTA flash because the released image intentionally does not include them.
+> **Warning:** Flashing `littlefs.bin` replaces the entire LittleFS partition. All runtime config files (`settings.json`, `mqtt.json`, `homing.json`) are erased. Back them up before flashing and restore them afterwards.
+>
+> **Backup** — run on your PC (PowerShell or cmd) before flashing:
+> ```bash
+> curl http://<device-ip>/settings.json -o settings.json
+> curl http://<device-ip>/mqtt.json     -o mqtt.json
+> curl http://<device-ip>/homing.json   -o homing.json
+> ```
+>
+> **Restore** — run on your PC after flashing, then reboot the device:
+> ```bash
+> curl -F "file=@settings.json" http://<device-ip>/upload
+> curl -F "file=@mqtt.json"     http://<device-ip>/upload
+> curl -F "file=@homing.json"   http://<device-ip>/upload
+> ```
+>
+> The `/upload` endpoint only accepts these three filenames (whitelist). Other files — in
+> particular the web assets (`index.html`, `script.js`, `style.css`) — are rejected because
+> the endpoint has no authentication. Allowing arbitrary uploads would let anyone on the same
+> network overwrite the web UI with malicious content. Web assets are updated exclusively via
+> the password-protected OTA interface on port 8080.
 
 Alternatively, configure OTA upload directly in `platformio.ini`:
 

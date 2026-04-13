@@ -159,6 +159,25 @@ function send(obj) {
     if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
 }
 
+function loadSettingsHttp() {
+    if (settingsFetchPending) return;
+    settingsFetchPending = true;
+    settingsRetryCount = 0;
+    // TODO: For HTML debugging with LiveServer use the ESP IP directly
+    fetch('/settings')                             // production
+    // fetch('http://192.168.178.130/settings')    // LiveServer
+        .then(r => r.json())
+        .then(data => { settingsRetryCount = 0; clearTimeout(settingsRetryTimer); updateUI(data); console.log("Settings loaded via HTTP"); })
+        .catch(e => { if (++settingsRetryCount <= 3) { console.warn("Settings fetch failed, retry", settingsRetryCount); settingsRetryTimer = setTimeout(loadSettingsHttp, 2000); } else { console.error("Settings fetch gave up after 3 retries:", e); } })
+        .finally(() => { settingsFetchPending = false; });
+}
+
+function reconnect() {
+    if (ws) { ws.onclose = null; ws.close(); ws = null; }
+    loadSettingsHttp();
+    connectWS();
+}
+
 function connectWS() {
     // TODO: For HTML debugging with LiveServer use the IP address of the ESP
     // ws = new WebSocket(`ws://192.168.178.130/ws`);
@@ -194,6 +213,7 @@ function updateUI(data) {
         autoBrightness.checked = data.autoBrightness;
         autoPanel.style.display = data.autoBrightness ? "block" : "none";
         manualPanel.style.display = data.autoBrightness ? "none" : "block";
+        document.getElementById('autoBrightnessMonitor').style.display = data.autoBrightness ? "inline" : "none";
     }
 
     const syncSlider = (id, value) => {
@@ -336,7 +356,8 @@ function updateUI(data) {
         updateMqttStatus(data.mqttConnected);
 
     // System
-    if (data.lux !== undefined) luxVal.textContent = Number(data.lux).toFixed(1);
+    if (data.lux        !== undefined) luxVal.textContent = Number(data.lux).toFixed(1);
+    if (data.brightness !== undefined) document.getElementById('autoBrightnessVal').textContent = data.brightness;
     if (data.current_mA !== undefined) currentVal.textContent = data.current_mA + " mA";
     if (data.rssi !== undefined) rssiVal.textContent = data.rssi + " dBm";
     if (data.ip !== undefined) ipVal.textContent = data.ip;
@@ -382,7 +403,7 @@ window.onload = () => {
             document.querySelectorAll(".tab, .tab-content").forEach(el => el.classList.remove("active"));
             btn.classList.add("active");
             document.getElementById(btn.dataset.tab).classList.add("active");
-            loadSettings();
+            loadSettingsHttp();
         };
     });
 
@@ -390,6 +411,7 @@ window.onload = () => {
     autoBrightness.onchange = e => {
         autoPanel.style.display = e.target.checked ? "block" : "none";
         manualPanel.style.display = e.target.checked ? "none" : "block";
+        document.getElementById('autoBrightnessMonitor').style.display = e.target.checked ? "inline" : "none";
         send({ autoBrightness: e.target.checked });
     };
 
@@ -549,19 +571,7 @@ window.onload = () => {
     bindTrigger("btnSfxShootingStarTrigger", "sfxShootingStarTrigger");
     bindTrigger("btnSfxHeartbeatTrigger", "sfxHeartbeatTrigger");
 
-    // Load settings via HTTP — independent of WebSocket state
-    function loadSettings() {
-        if (settingsFetchPending) return;
-        settingsFetchPending = true;
-        // TODO: For HTML debugging with LiveServer use the ESP IP directly
-        fetch('/settings')                             // production
-        // fetch('http://192.168.178.130/settings')    // LiveServer
-            .then(r => r.json())
-            .then(data => { settingsRetryCount = 0; clearTimeout(settingsRetryTimer); updateUI(data); console.log("Settings loaded via HTTP"); })
-            .catch(e => { if (++settingsRetryCount <= 3) { console.warn("Settings fetch failed, retry", settingsRetryCount); settingsRetryTimer = setTimeout(loadSettings, 2000); } else { console.error("Settings fetch gave up after 3 retries:", e); } })
-            .finally(() => { settingsFetchPending = false; });
-    }
-    loadSettings();
+    loadSettingsHttp();
 
     connectWS();
 };

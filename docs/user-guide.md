@@ -76,6 +76,10 @@ http://<device-ip>
 The interface is organised into eight tabs. All changes take effect **immediately** — no page reload
 needed. Settings are held in RAM until you explicitly save them.
 
+A **⟳ reload button** in the top-right corner of the header reloads the page. This is especially
+useful on iOS when the web app is added to the home screen, where there is no address bar and
+pull-to-refresh is not available.
+
 > Click **Save Settings** (in the **System** tab) to write all current settings to flash. Settings
 > survive reboots and power cuts only after saving. If you lose power before saving, the device
 > reverts to the previously saved state.
@@ -316,7 +320,9 @@ automatically on disconnection. Connection status is shown as a badge next to th
 | Client ID | `ringclock` | Must be unique on the broker |
 | Topic Base | `ringclock` | Prefix for all topics |
 
- Press **Apply & Save MQTT** to apply the MQTT settings and make them persistant. MQTT credentials are saved separately to `mqtt.json` and survive a LittleFS OTA flash.
+Press **Apply & Save MQTT** to apply the MQTT settings and make them persistent. MQTT credentials are saved separately to `mqtt.json`.
+
+> **Note:** Flashing a new `littlefs.bin` erases all config files including `mqtt.json`. See the [development guide](development-guide.md#6-ota-update) for backup and restore instructions.
 
 Note: **Save Settings** button at **System** tab does not store these settings!
 
@@ -408,9 +414,9 @@ browser — no USB cable needed.
 
 Authentication is required (username/password configured in `config.h`).
 
-> **Your settings are safe during a filesystem update.** The released LittleFS image does not
-> include `settings.json`, `mqtt.json`, or `homing.json`. The ESP8266 preserves every file absent
-> from the uploaded image, so flashing a new filesystem leaves your configuration exactly as it was.
+> **Warning: Flashing a new filesystem image erases all config files** (`settings.json`,
+> `mqtt.json`, `homing.json`). Back them up before flashing and restore them afterwards.
+> See the [development guide](development-guide.md#6-ota-update) for the backup and restore procedure.
 
 ---
 
@@ -483,7 +489,7 @@ and open a serial monitor to see boot messages, Wi-Fi status, NTP results, and m
 - If `.local` does not resolve (some managed networks block mDNS multicast), use the IP address
   directly.
 - If the interface loads but the WebSocket does not connect, try a hard browser refresh
-  (Ctrl+Shift+R).
+  (Ctrl+Shift+R). On iOS home-screen apps use the **⟳ button** in the header instead.
 
 ### LEDs do not light up
 

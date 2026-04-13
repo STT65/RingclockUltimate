@@ -83,7 +83,8 @@ void sendMonitoring()
 {
     StaticJsonDocument<512> doc;
 
-    doc["lux"] = Brightness::getLux();
+    doc["lux"]        = Brightness::getLux();
+    doc["brightness"] = Brightness::getSystemBrightness();
     doc["current_mA"] = Renderer::getLastCurrentmA();
     doc["rssi"] = WiFi.RSSI();
     doc["ip"] = WiFi.localIP().toString();
@@ -630,6 +631,37 @@ void WebServer::init()
 
         server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html")
               .setCacheControl("no-cache, no-store, must-revalidate");
+
+        // Upload endpoint for restoring config files after LittleFS reflash.
+        // Usage: curl -F "file=@settings.json" http://<ip>/upload
+        // Allowed files: settings.json, mqtt.json, homing.json
+        server.on("/upload", HTTP_POST,
+            [](AsyncWebServerRequest *req) {
+                req->send(200, "text/plain", "OK");
+            },
+            [](AsyncWebServerRequest *req, const String &filename, size_t index,
+               uint8_t *data, size_t len, bool final) {
+                static File uploadFile;
+                static bool allowed = false;
+
+                if (!index) {
+                    allowed = (filename == "settings.json" ||
+                               filename == "mqtt.json"     ||
+                               filename == "homing.json");
+                    if (allowed)
+                        uploadFile = LittleFS.open("/" + filename, "w");
+                    else
+                        LOG_ERROR(LOG_WEB, F("WEB: Upload rejected — filename not allowed"));
+                }
+                if (allowed && uploadFile)
+                    uploadFile.write(data, len);
+
+                if (final && allowed && uploadFile) {
+                    uploadFile.close();
+                    LOG_INFO(LOG_WEB, F("WEB: Upload complete"));
+                }
+            }
+        );
     }
 
     server.begin();
