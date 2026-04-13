@@ -32,12 +32,6 @@ __pycache__/
 # Windows
 Thumbs.db
 
-# Files with sensitive content — use data/*.example.json as templates
-wifi.txt
-data/settings.json
-data/mqtt.json
-data/homing.json
-
 # Claude Code internal files
 .claude/
 
