@@ -173,9 +173,8 @@ function loadSettingsHttp() {
 }
 
 function reconnect() {
-    if (ws) { ws.onclose = null; ws.close(); ws = null; }
-    loadSettingsHttp();
-    connectWS();
+    const activeTab = document.querySelector(".tab.active");
+    if (activeTab) activeTab.click();
 }
 
 function connectWS() {

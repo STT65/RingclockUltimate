@@ -178,12 +178,14 @@ input[type="time"] {
     width: 300px;
     box-sizing: border-box;
     text-align: right;
+    text-align-last: right; /* Safari: right-aligns the displayed value in <select> */
 }
 
 .field-sm {
     width: 150px;
     box-sizing: border-box;
     text-align: right;
+    text-align-last: right; /* Safari: right-aligns the displayed value in <select> */
 }
 
 #mqttPort::-webkit-inner-spin-button,
