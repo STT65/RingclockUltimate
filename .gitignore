@@ -35,5 +35,3 @@ Thumbs.db
 # Claude Code internal files
 .claude/
 
-# Requirements document (internal, not published)
-docs/requirements.md

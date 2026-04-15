@@ -3,13 +3,15 @@
  * @brief Ambient light measurement and system brightness control.
  *
  * Reads the BH1750 light sensor and calculates the effective system brightness
- * that is applied to all LED output. Three operating modes are supported:
+ * that is applied to all LED output. Two operating modes are supported:
  *
- * - **Manual mode**: brightness is fixed at Settings::manualBrightness.
+ * - **Manual mode**: brightness is fixed at NightMode::manualBrightness.
  * - **Auto mode**: brightness is derived from the measured lux value, scaled
  *   between Settings::autoMin and Settings::autoMax.
- * - **Night mode**: overrides the above with Settings::nightBrightness during
- *   a user-defined time window (Settings::nightStart .. Settings::nightEnd).
+ *
+ * Night mode dimming is handled transparently via the NightMode shadow variables:
+ * when active, NightMode::autoBrightness is forced false and NightMode::manualBrightness
+ * is set to Settings::nightBrightness. This module requires no special night mode logic.
  *
  * All mode transitions are smoothed by a first-order low-pass filter to avoid
  * abrupt brightness changes.
@@ -52,8 +54,8 @@ namespace Brightness
         else
             LOG_ERROR(LOG_BRI, F("BRI:  BH1750 not found! Please check wiring."));
 
+        // NightMode shadows are not yet initialised at this point — read Settings directly.
         lastAutoMode = Settings::autoBrightness;
-        // Night mode state is initialised correctly on the first update() call.
 
         if (Settings::autoBrightness)
         {
@@ -75,18 +77,18 @@ namespace Brightness
             return;
         lastMeasureMs = now;
 
-        // Log mode transitions triggered e.g. by the web interface
-        if (Settings::autoBrightness != lastAutoMode)
+        // Log mode transitions triggered e.g. by the web interface or night mode
+        if (NightMode::autoBrightness != lastAutoMode)
         {
-            lastAutoMode = Settings::autoBrightness;
+            lastAutoMode = NightMode::autoBrightness;
             LOG_INFO(LOG_BRI, lastAutoMode ? F("BRI:  Switched to AUTO mode.") : F("BRI:  Switched to MANUAL mode."));
         }
 
         // -------------------------------------------------------------------------
-        // Step 1: Determine base target brightness (auto or manual)
+        // Determine target brightness from effective (night-aware) mode variables
         // -------------------------------------------------------------------------
         float targetBrightness;
-        if (Settings::autoBrightness)
+        if (NightMode::autoBrightness)
         {
             lastLux = lightMeter.readLightLevel();
             if (lastLux < 0)
@@ -98,17 +100,11 @@ namespace Brightness
         }
         else
         {
-            targetBrightness = (float)Settings::manualBrightness;
+            targetBrightness = (float)NightMode::manualBrightness;
         }
 
         // -------------------------------------------------------------------------
-        // Step 2: Override target brightness if night mode is active and dimming is enabled
-        // -------------------------------------------------------------------------
-        if (NightMode::isActive() && (Settings::nightFeatures & Settings::NIGHT_DIM_LEDS))
-            targetBrightness = (float)Settings::nightBrightness;
-
-        // -------------------------------------------------------------------------
-        // Step 3: Apply low-pass filter for smooth brightness transitions
+        // Apply low-pass filter for smooth brightness transitions
         // -------------------------------------------------------------------------
         const float filterFactor = 0.1f;
         smoothedBrightness = (targetBrightness * filterFactor) + (smoothedBrightness * (1.0f - filterFactor));

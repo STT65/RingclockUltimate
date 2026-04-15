@@ -10,6 +10,8 @@ let settingsRetryTimer = null;
 let settingsFetchPending = false;
 let settingsRetryCount = 0;
 let autoHomingActive  = false; // tracks motorAutoHoming from server (true = auto homing enabled at runtime)
+let _nightActive      = false;
+let _nightFeatures    = 0;
 
 /* ---------------------------------------------------------
    Time helpers
@@ -164,8 +166,8 @@ function loadSettingsHttp() {
     settingsFetchPending = true;
     settingsRetryCount = 0;
     // TODO: For HTML debugging with LiveServer use the ESP IP directly
+    //fetch('http://192.168.178.130/settings')    // LiveServer
     fetch('/settings')                             // production
-    // fetch('http://192.168.178.130/settings')    // LiveServer
         .then(r => r.json())
         .then(data => { settingsRetryCount = 0; clearTimeout(settingsRetryTimer); updateUI(data); console.log("Settings loaded via HTTP"); })
         .catch(e => { if (++settingsRetryCount <= 3) { console.warn("Settings fetch failed, retry", settingsRetryCount); settingsRetryTimer = setTimeout(loadSettingsHttp, 2000); } else { console.error("Settings fetch gave up after 3 retries:", e); } })
@@ -179,7 +181,7 @@ function reconnect() {
 
 function connectWS() {
     // TODO: For HTML debugging with LiveServer use the IP address of the ESP
-    // ws = new WebSocket(`ws://192.168.178.130/ws`);
+    //ws = new WebSocket(`ws://192.168.178.130/ws`);
     ws = new WebSocket(`ws://${location.host}/ws`);
     ws.onopen  = () => { console.log("WS connected"); };
     ws.onclose = () => { console.warn("WS disconnected, retrying..."); setTimeout(connectWS, 2000); };
@@ -197,13 +199,37 @@ const syncColor = (id, hex) => {
     if (el && hex) el.value = hex;
 };
 
-function formatInterval(minutes) {
-    if (minutes === 0) return "off";
+function minutesToTime(minutes) {
     const h = Math.floor(minutes / 60);
     const m = minutes % 60;
-    if (h === 0) return `${m}m`;
-    if (m === 0) return `${h}h`;
-    return `${h}h${m}m`;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function timeToMinutes(t) {
+    if (!t) return 0;
+    const [h, m] = t.split(':').map(Number);
+    return h * 60 + m;
+}
+
+function updateNightOverrides() {
+    const mark = (ids, active) => {
+        ids.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.classList.toggle('night-override', active);
+            el.title = active ? 'Currently overridden by Night Mode' : '';
+        });
+    };
+    mark(['autoBrightnessRow'],
+        _nightActive && !!(_nightFeatures & 0x01));
+    mark(['sfxShortCircuitRow', 'sfxRadarRow', 'sfxShootingStarRow', 'sfxHeartbeatRow'],
+        _nightActive && !!(_nightFeatures & 0x02));
+    mark(['sHandRingSelection'],
+        _nightActive && !!(_nightFeatures & 0x04));
+    mark(['motorModeRow'],
+        _nightActive && !!(_nightFeatures & 0x08));
+    mark(['hourMarksRow', 'quarterMarksRow'],
+        _nightActive && !!(_nightFeatures & 0x10));
 }
 
 function updateUI(data) {
@@ -223,9 +249,7 @@ function updateUI(data) {
     };
     const syncIntervalSlider = (id, value) => {
         const input = document.getElementById(id);
-        const display = document.getElementById(id + "Val");
-        if (input) input.value = value;
-        if (display) display.textContent = formatInterval(value);
+        if (input) input.value = minutesToTime(value);
     };
 
     if (data.manualBrightness !== undefined) syncSlider("manualBrightness", data.manualBrightness);
@@ -323,8 +347,12 @@ function updateUI(data) {
     if (data.nightModeEnabled !== undefined) nightModeEnabled.checked = data.nightModeEnabled;
     if (data.nightStart       !== undefined) nightStart.value         = minutesToTimeString(data.nightStart);
     if (data.nightEnd         !== undefined) nightEnd.value           = minutesToTimeString(data.nightEnd);
-    if (data.nightActive      !== undefined) nightActiveStatus.textContent = data.nightActive ? 'Active' : 'Inactive';
-    if (data.nightFeatures    !== undefined) {
+    if (data.nightActive !== undefined) {
+        _nightActive = data.nightActive;
+        nightActiveStatus.textContent = data.nightActive ? 'Active' : 'Inactive';
+    }
+    if (data.nightFeatures !== undefined) {
+        _nightFeatures = data.nightFeatures;
         const f = data.nightFeatures;
         nightDimLeds.checked       = !!(f & 0x01);
         nightSfxOff.checked        = !!(f & 0x02);
@@ -332,6 +360,9 @@ function updateUI(data) {
         nightMotorHome.checked     = !!(f & 0x08);
         nightMarkersOff.checked    = !!(f & 0x10);
         document.getElementById('nightDimGroup').classList.toggle('visible', nightDimLeds.checked);
+    }
+    if (data.nightActive !== undefined || data.nightFeatures !== undefined) {
+        updateNightOverrides();
     }
 
     // MQTT settings
@@ -423,10 +454,8 @@ window.onload = () => {
     };
     const bindIntervalRange = (id) => {
         const el = document.getElementById(id);
-        const valEl = document.getElementById(id + "Val");
         if (!el) return;
-        el.oninput = () => { if (valEl) valEl.textContent = formatInterval(Number(el.value)); };
-        el.onchange = () => { send({ [id]: Number(el.value) }); };
+        el.onchange = () => { send({ [id]: timeToMinutes(el.value) }); };
     };
     ["sfxShortCircuitInterval", "sfxRadarInterval",
         "sfxShootingStarInterval", "sfxHeartbeatInterval",

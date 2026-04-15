@@ -32,17 +32,21 @@
     <main>
         <section id="brightness" class="tab-content active card">
             <h2>System Brightness</h2>
-            <div class="row" style="margin-bottom: 30px;">
-                <label title="Turn on/off automatic brightness mode.">
-                    <input type="checkbox" id="autoBrightness"> Automatic Brightness
-                </label>
-                <span id="autoBrightnessMonitor" style="display:none; margin-left:16px;">
-                    <span id="autoBrightnessVal">0</span>
-                </span>
+            <div class="grid-row" id="autoBrightnessRow">
+                <div style="grid-column: span 2;">
+                    <label title="Turn on/off automatic brightness mode.">
+                        <input type="checkbox" id="autoBrightness"> Automatic Brightness
+                    </label>
+                </div>
+                <div class="grid-val">
+                    <span id="autoBrightnessMonitor" style="display:none;">
+                        <span id="autoBrightnessVal">0</span>
+                    </span>
+                </div>
             </div>
 
             <div id="manualPanel">
-                <div class="grid-row" style="margin-bottom: 20px;">
+                <div class="grid-row" style="margin-bottom: 30px;">
                     <div>
                         <label title="Set the system brightness manually (0-255).">Manual Brightness:</label>
                     </div>
@@ -98,7 +102,7 @@
                         <span id="autoMaxVal">0</span>
                     </div>
                 </div>
-                <div class="grid-row" style="margin-bottom: 20px;">
+                <div class="grid-row" style="margin-bottom: 30px;">
                     <div>
                         <label title="Minimum brightness level in automatic mode.">Min Brightness:</label>
                     </div>
@@ -139,7 +143,7 @@
                     <input type="color" id="ambientColorPicker">
                 </div>
             </div>
-            <div class="grid-row">
+            <div class="grid-row" id="hourMarksRow">
                 <div style="grid-column: span 2;">
                     <label title="Display accent lights at every hour position (1-12).">
                         <input type="checkbox" id="hourMarksEnabled"> Hour Markers
@@ -149,7 +153,7 @@
                     <input type="color" id="hourMarkColorPicker">
                 </div>
             </div>
-            <div class="grid-row" style="margin-bottom: 30px;">
+            <div class="grid-row" id="quarterMarksRow" style="margin-bottom: 30px;">
                 <div style="grid-column: span 2;">
                     <label title="Display stronger accent lights at 12, 3, 6, and 9 o'clock.">
                         <input type="checkbox" id="quarterMarksEnabled"> Quarter Markers
@@ -212,7 +216,7 @@
                         <input type="range" id="sTailFwdLen" value="0" min="0" max="11">
                     </div>
                 </div>
-                <div class="ring-selection">
+                <div class="ring-selection" id="sHandRingSelection">
                     <label title="Show on ring 1"><input type="checkbox" class="ring-mask-check" data-hand="s"
                             data-bit="0"> Ring 1</label>
                     <label title="Show on ring 2"><input type="checkbox" class="ring-mask-check" data-hand="s"
@@ -316,52 +320,48 @@
                 <div>Manual Trigger</div>
             </div>
 
-            <div class="grid-row">
+            <div class="grid-row" id="sfxShortCircuitRow">
                 <div>
                     <label title="Simulates an electrical short circuit with flickering flashes.">Short Circuit</label>
                 </div>
                 <div class="sfx-param">
-                    <input title="Interval" type="range" id="sfxShortCircuitInterval" value="0" min="0" max="1440">
-                    <span id="sfxShortCircuitIntervalVal" class="sfx-val">off</span>
+                    <input title="Trigger interval (00:00 = off)" type="time" id="sfxShortCircuitInterval" value="00:00">
                 </div>
                 <div class="sfx-trigger">
                     <button id="btnSfxShortCircuitTrigger">Trigger</button>
                 </div>
             </div>
 
-            <div class="grid-row">
+            <div class="grid-row" id="sfxRadarRow">
                 <div>
                     <label title="Simulates a classic radar screen.">Radar</label>
                 </div>
                 <div class="sfx-param">
-                    <input title="Interval" type="range" id="sfxRadarInterval" value="0" min="0" max="1440">
-                    <span id="sfxRadarIntervalVal" class="sfx-val">off</span>
+                    <input title="Trigger interval (00:00 = off)" type="time" id="sfxRadarInterval" value="00:00">
                 </div>
                 <div class="sfx-trigger">
                     <button id="btnSfxRadarTrigger">Trigger</button>
                 </div>
             </div>
 
-            <div class="grid-row" style="margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #444;">
+            <div class="grid-row" id="sfxShootingStarRow" >
                 <div>
                     <label title="Simulates a bright meteor that speeds across the dial.">Shooting Star</label>
                 </div>
                 <div class="sfx-param">
-                    <input title="Interval" type="range" id="sfxShootingStarInterval" value="0" min="0" max="1440">
-                    <span id="sfxShootingStarIntervalVal" class="sfx-val">off</span>
+                    <input title="Trigger interval (00:00 = off)" type="time" id="sfxShootingStarInterval" value="00:00">
                 </div>
                 <div class="sfx-trigger">
                     <button id="btnSfxShootingStarTrigger">Trigger</button>
                 </div>
             </div>
 
-            <div class="grid-row">
+            <div class="grid-row" id="sfxHeartbeatRow">
                 <div>
                     <label title="A rhythmic double-pulse that modulates the brightness for 5 seconds.">Heartbeat</label>
                 </div>
                 <div class="sfx-param">
-                    <input title="Interval" type="range" id="sfxHeartbeatInterval" value="0" min="0" max="1440">
-                    <span id="sfxHeartbeatIntervalVal" class="sfx-val">off</span>
+                    <input title="Trigger interval (00:00 = off)" type="time" id="sfxHeartbeatInterval" value="00:00">
                 </div>
                 <div class="sfx-trigger">
                     <button id="btnSfxHeartbeatTrigger">Trigger</button>
@@ -373,7 +373,7 @@
                     <label title="Intensity of the rhythmic double-pulse that modulates the brightness for 5 seconds.">Heartbeat Intensity</label>
                 </div>
                 <div class="sfx-param">
-                    <input title="Intensity (0=no modulation, 255=100 % brightness modulation)" type="range"
+                    <input title="Modulation strength (0=minimum, 255=maximum)" type="range"
                         id="sfxHeartbeatIntensity" value="0" min="0" max="255">
                     <span id="sfxHeartbeatIntensityVal" class="sfx-val">0</span>
                 </div>
@@ -383,10 +383,8 @@
                 <p>Special effects are visual highlights that overlay the standard time display. All effects run for a
                     fixed duration and can be triggered manually or at a configurable interval.</p>
                 <ul>
-                    <li><strong>Interval:</strong> The trigger logic is strictly aligned with midnight
-                        (0:00). <br>
-                        <em>Example:</em> <code>1h</code> triggers exactly at the top of every hour. <code>24h</code>
-                        starts the effect exactly at midnight.
+                    <li><strong>Interval:</strong> Intervals for a day, aligned to midnight, so effects trigger at every full minute or hour. <br>
+                        <em>Examples:</em> <code>00:01</code>=every minute; <code>01:00</code>=every hour; <code>14:00</code>=once a day at 14:00.
                     </li>
                     <li><strong>Intensity:</strong> Controls the strength of a effect (1 = minimum, 255 =
                         maximum).</li>
@@ -396,7 +394,7 @@
         <section id="motor" class="tab-content card">
             <h2>Stepper Motor Setup</h2>
 
-            <div class="row">
+            <div class="row" id="motorModeRow">
                 <label
                     title="Operating mode of the motor (off, hours, minutes, seconds, or homing / calibration).">Motor
                     Mode:</label>

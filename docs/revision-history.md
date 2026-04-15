@@ -1,5 +1,25 @@
 # Revision History
 
+## Unreleased — Night mode refactor & GUI indicators
+
+### Changes
+
+- **Night mode shadow variables** — `night_mode.cpp` now exposes effective runtime
+  variables (`NightMode::motorMode`, `NightMode::autoBrightness`, etc.) that are
+  recomputed every loop. Settings are never mutated by night mode; all values are
+  automatically restored when the night window ends.
+- **Consuming modules updated** — `motor.cpp`, `time_state.cpp`, `layer_sfx.cpp`,
+  `layer_time.cpp`, `layer_ambient.cpp`, `brightness.cpp` read `NightMode::` variables
+  instead of `Settings::` directly.
+- **Web GUI amber indicators** — Parameters currently overridden by night mode are
+  highlighted with an amber left border. The highlight is driven by `nightActive` and
+  `nightFeatures` and updates within one second of a state change.
+- **Documentation** — `designer-guide.md`, `requirements.md`, and `user-guide.md`
+  updated to describe the new architecture and inform the user that their settings are
+  always preserved during the night window.
+
+---
+
 ## Unreleased — LittleFS config backup & restore
 
 **Branch:** `LittleFS`

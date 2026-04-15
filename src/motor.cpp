@@ -5,7 +5,7 @@
  * Controls a stepper motor that mechanically displays the current time.
  * The motor position is kept in sync with the NTP time source at all times.
  *
- * **Operating modes** (selected by `Settings::motorMode`):
+ * **Operating modes** (selected by `NightMode::motorMode`):
  * - `0` — Off: driver disabled, motor de-energised.
  * - `1/2/3` — Hours / Minutes / Seconds: motor tracks the selected time unit.
  *   Two sub-modes:
@@ -45,6 +45,7 @@
 #include "settings.h"
 #include "time_state.h"
 #include "logging.h"
+#include "night_mode.h"
 
 #if MOTOR_AH_EN
 #include "motor_homing.h"
@@ -163,7 +164,7 @@ namespace Motor
      */
     static uint32_t calcAnalogBaseUs()
     {
-        switch (Settings::motorMode)
+        switch (NightMode::motorMode)
         {
         case 1:
             return (uint32_t)(43200ULL * 1000000ULL / MOTOR_STEPS_PER_REV); // hours
@@ -568,23 +569,23 @@ namespace Motor
         seekRunning = false;
         LOG_DEBUG(LOG_MOT, String(F("MOT: resync()-Timer stoped. isrDone=")) + isrDone);
         digitalWrite(PIN_MOTOR_EN, LOW); // enable motor driver
-        if (Settings::motorMode == 0 || Settings::motorMode == 4)
+        if (NightMode::motorMode == 0 || NightMode::motorMode == 4)
         {
-            if (oldMotorMode != Settings::motorMode && isrCurrentPos != 0)
+            if (oldMotorMode != NightMode::motorMode && isrCurrentPos != 0)
             { // No time display -> park motor at 12 o'clock
-                LOG_DEBUG(LOG_MOT, String(F("MOT: motorMode changed to ")) + Settings::motorMode + F(". Seeking to 12 o'clock"));
+                LOG_DEBUG(LOG_MOT, String(F("MOT: motorMode changed to ")) + NightMode::motorMode + F(". Seeking to 12 o'clock"));
                 seekRunning = true;
                 timerStartAutoDir(isrSeekIntervalUs, 0);
             }
         }
         else
         { // Time display active -> seek to (new) target position
-            LOG_DEBUG(LOG_MOT, String(F("MOT: resync() Motor1-3=")) + Settings::motorMode);
+            LOG_DEBUG(LOG_MOT, String(F("MOT: resync() Motor1-3=")) + NightMode::motorMode);
             analogBaseUs = calcAnalogBaseUs();
             seekRunning = true;
             timerStartAutoDir(isrSeekIntervalUs, TimeState::calcMotorPosition());
         }
-        oldMotorMode = Settings::motorMode;
+        oldMotorMode = NightMode::motorMode;
         nextGridChangeMs = 0;    // force immediate grid check on next update()
         lastSeekCorrectMs = 0;   // force immediate seek correction on next update()
     }
@@ -609,10 +610,10 @@ namespace Motor
             homingRunningOld1 = homingRunning;
             seekRunningOld = seekRunning;
             rampRunningOld = rampRunning;
-            LOG_DEBUG(LOG_MOT, String(F("MOT: update(): homingRunning=")) + homingRunning + F(", seekRunning=") + seekRunning + F(", rampRunning=") + rampRunning + F(", motorMode=") + Settings::motorMode + F(", isrCurrentPos=") + isrCurrentPos + F(", isrIntervalUs=") + isrIntervalUs + F(", isrDone=") + isrDone);
+            LOG_DEBUG(LOG_MOT, String(F("MOT: update(): homingRunning=")) + homingRunning + F(", seekRunning=") + seekRunning + F(", rampRunning=") + rampRunning + F(", motorMode=") + NightMode::motorMode + F(", isrCurrentPos=") + isrCurrentPos + F(", isrIntervalUs=") + isrIntervalUs + F(", isrDone=") + isrDone);
         }
 
-        if (homingRunning || Settings::motorMode == 4)
+        if (homingRunning || NightMode::motorMode == 4)
         {
             bool wasRunning = homingRunning;
 #if MOTOR_AH_EN
@@ -628,14 +629,14 @@ namespace Motor
                 }
             }
             // On homing completion: resync so any settings changes during homing take effect
-            if (wasRunning && !homingRunning && Settings::motorMode != 4)
+            if (wasRunning && !homingRunning && NightMode::motorMode != 4)
                 resync();
             return;
         }
 
         if (seekRunning)
         {
-            if (Settings::motorMode >= 1 && Settings::motorMode <= 3)
+            if (NightMode::motorMode >= 1 && NightMode::motorMode <= 3)
             {
                 bool nearTarget  = circularDistance(isrPositionTarget, isrCurrentPos) <= 2;
                 bool periodicDue = (millis() - lastSeekCorrectMs) >= 500;
@@ -650,7 +651,7 @@ namespace Motor
             return;
         }
 
-        if (Settings::motorMode == 0)
+        if (NightMode::motorMode == 0)
         {
             timerStop();
             digitalWrite(PIN_MOTOR_EN, HIGH); // disable motor driver

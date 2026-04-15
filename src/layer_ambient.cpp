@@ -10,6 +10,7 @@
 #include "layer_ambient.h"
 #include "settings.h"
 #include "config.h"
+#include "night_mode.h"
 #include "color.h"
 
 namespace AmbientLayer
@@ -31,7 +32,7 @@ namespace AmbientLayer
         // ----------------------------------------------------------------
         // 2. Hour markers — every n/12 LEDs (H12-grid)
         // ----------------------------------------------------------------
-        if (Settings::hourMarksEnabled)
+        if (NightMode::hourMarksEnabled)
         {
             Color::RGB hourColor = Color::hsvToRgb(Settings::hourMarkColor);
             for (uint8_t i = 0; i < n; i += n / 12)
@@ -41,7 +42,7 @@ namespace AmbientLayer
         // ----------------------------------------------------------------
         // 3. Quarter-hour markers — LEDs at 0%, 25%, 50%, 75% (highest priority)
         // ----------------------------------------------------------------
-        if (Settings::quarterMarksEnabled)
+        if (NightMode::quarterMarksEnabled)
         {
             Color::RGB qColor = Color::hsvToRgb(Settings::quarterMarkColor);
             buffer[0]          = qColor;

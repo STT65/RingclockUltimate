@@ -10,6 +10,7 @@
 #include "layer_time.h"
 #include "time_state.h"
 #include "settings.h"
+#include "night_mode.h"
 #include "config.h"
 #include "color.h"
 
@@ -133,7 +134,7 @@ namespace TimeLayer
         uint8_t hourLED   = (uint8_t)(((uint16_t)(t.h % 12) * n + minuteLED) / 12);
         uint8_t secondLED = mapToLED(t.s, 60, n);
 
-        const bool secondEnabled = (Settings::secondHand.ringMask != 0);
+        const bool secondEnabled = (NightMode::secondHandRingMask != 0);
 
         // --- Pass 1: fill-mode tails (length == 11) rendered first so they
         //             appear below all hand pointers and normal tails.
@@ -162,7 +163,7 @@ namespace TimeLayer
         if (Settings::minuteHand.ringMask & (1 << ringIndex))
             renderHand(buffer, minuteLED, Settings::minuteHand, n);
 
-        if ((Settings::secondHand.ringMask & (1 << ringIndex)) && secondEnabled)
+        if ((NightMode::secondHandRingMask & (1 << ringIndex)) && secondEnabled)
             renderHand(buffer, secondLED, Settings::secondHand, n);
 
         // Next render at the start of the next second (ms-accurate via getTimeMs base)

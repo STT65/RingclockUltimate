@@ -2,6 +2,7 @@
 #include "settings.h"
 #include "time_state.h"
 #include "logging.h"
+#include "night_mode.h"
 #include <NTPClient.h>
 #include <WiFiUdp.h>
 
@@ -120,7 +121,7 @@ namespace TimeState
         uint32_t total = getLocalTimeMs(); // local time in ms within 24 h day (0..86399999)
         TimeInfo t;
         const uint16_t steps = MOTOR_STEPS_PER_REV;
-        switch (Settings::motorMode)
+        switch (NightMode::motorMode)
         {
         case 1: // Motor shows hours
             t.h = (total / 3600000UL) % 12;
@@ -219,7 +220,7 @@ namespace TimeState
         uint32_t total = getLocalTimeMs();
         uint32_t period = 0; // grid period in ms
 
-        switch (Settings::motorMode)
+        switch (NightMode::motorMode)
         {
         case 1: // hours
             switch (Settings::motorGrid)

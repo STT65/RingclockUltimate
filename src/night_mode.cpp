@@ -3,15 +3,15 @@
  * @brief Night mode state machine implementation.
  *
  * Evaluates the configured time window on every call to update() and
- * manages the transition between day and night states. Each enabled
- * feature flag triggers the corresponding side effect:
+ * manages the active/inactive state. On every loop iteration the effective
+ * runtime variables are refreshed:
  *
- * - nightDimLeds       → brightness.cpp reads NightMode::isActive()
- * - nightSfxOff        → layer_sfx.cpp reads NightMode::isActive()
- * - nightSecondHandOff → layer_time.cpp reads NightMode::isActive()
- * - nightMarkersOff    → layer_ambient.cpp reads NightMode::isActive()
- * - nightMotorHome     → motor is parked (motorMode=0) on entry,
- *                        restored on exit
+ * - nightSfxOff        → sfx*Interval variables set to 0
+ * - nightSecondHandOff → secondHandRingMask set to 0
+ * - nightMarkersOff    → hourMarksEnabled / quarterMarksEnabled set to false
+ * - nightMotorHome     → motorMode set to 0 (Off); Motor::resync() triggered on change
+ *
+ * nightDimLeds is handled separately in brightness.cpp via isActive().
  */
 
 #include "night_mode.h"
@@ -22,25 +22,26 @@
 
 namespace NightMode
 {
-    static bool active         = false; // Current night-mode state.
-    static int  savedMotorMode = -1;    // Motor mode saved before parking (-1 = not saved).
+    // -------------------------------------------------------------------------
+    //  State
+    // -------------------------------------------------------------------------
 
-    static bool     sfxSaved                = false;
-    static uint16_t savedSfxRadarInterval;
-    static uint16_t savedSfxShortCircuitInterval;
-    static uint16_t savedSfxShootingStarInterval;
-    static uint16_t savedSfxHeartbeatInterval;
+    static bool active = false; ///< Current night-mode state.
 
-    static uint8_t savedSecondHandRingMask  = 0xFF; // 0xFF = not saved
+    // -------------------------------------------------------------------------
+    //  Public effective runtime variables (defined here, declared extern in .h)
+    // -------------------------------------------------------------------------
 
-    static bool markersSaved       = false;
-    static bool savedHourMarks;
-    static bool savedQuarterMarks;
-
-    bool isActive()
-    {
-        return active;
-    }
+    bool     autoBrightness          = false;
+    int      manualBrightness        = 0;
+    int      motorMode               = 0;
+    uint16_t sfxShortCircuitInterval = 0;
+    uint16_t sfxRadarInterval        = 0;
+    uint16_t sfxShootingStarInterval = 0;
+    uint16_t sfxHeartbeatInterval    = 0;
+    uint8_t  secondHandRingMask      = 0;
+    bool     hourMarksEnabled        = false;
+    bool     quarterMarksEnabled     = false;
 
     // -------------------------------------------------------------------------
     //  Internal: evaluate time window
@@ -65,8 +66,37 @@ namespace NightMode
     }
 
     // -------------------------------------------------------------------------
+    //  Internal: recompute all effective runtime variables from current state
+    // -------------------------------------------------------------------------
+
+    static void refreshShadows()
+    {
+        bool dimLeds   = active && (Settings::nightFeatures & Settings::NIGHT_DIM_LEDS);
+        bool sfxOff    = active && (Settings::nightFeatures & Settings::NIGHT_SFX_OFF);
+        bool sHandOff  = active && (Settings::nightFeatures & Settings::NIGHT_SECOND_HAND_OFF);
+        bool motorHome = active && (Settings::nightFeatures & Settings::NIGHT_MOTOR_HOME);
+        bool markOff   = active && (Settings::nightFeatures & Settings::NIGHT_MARKERS_OFF);
+
+        autoBrightness          = dimLeds   ? false                      : Settings::autoBrightness;
+        manualBrightness        = dimLeds   ? Settings::nightBrightness  : Settings::manualBrightness;
+        motorMode               = motorHome ? 0                          : Settings::motorMode;
+        sfxShortCircuitInterval = sfxOff    ? 0 : Settings::sfxShortCircuitInterval;
+        sfxRadarInterval        = sfxOff    ? 0 : Settings::sfxRadarInterval;
+        sfxShootingStarInterval = sfxOff    ? 0 : Settings::sfxShootingStarInterval;
+        sfxHeartbeatInterval    = sfxOff    ? 0 : Settings::sfxHeartbeatInterval;
+        secondHandRingMask      = sHandOff  ? 0 : Settings::secondHand.ringMask;
+        hourMarksEnabled        = markOff   ? false : Settings::hourMarksEnabled;
+        quarterMarksEnabled     = markOff   ? false : Settings::quarterMarksEnabled;
+    }
+
+    // -------------------------------------------------------------------------
     //  Public API
     // -------------------------------------------------------------------------
+
+    bool isActive()
+    {
+        return active;
+    }
 
     void update()
     {
@@ -76,88 +106,21 @@ namespace NightMode
         // state. This prevents spurious transitions caused by NTP corrections
         // that briefly shift the time across a minute boundary.
         static uint8_t confirmCount = 0;
-        if (inWindow == active)
-        {
-            confirmCount = 0; // already in expected state — reset counter
-            return;
+        if (inWindow == active) {
+            confirmCount = 0;
+        } else if (++confirmCount >= 3) {
+            confirmCount = 0;
+            active = inWindow;
+            LOG_INFO(LOG_NIGHT, active ? F("NMD: Night mode started.") : F("NMD: Night mode ended."));
         }
-        if (++confirmCount < 3)
-            return; // not yet confirmed
-        confirmCount = 0;
-        active = inWindow;
 
-        if (active)
-        {
-            // ----------------------------------------------------------------
-            // Day → Night transition
-            // ----------------------------------------------------------------
-            LOG_INFO(LOG_NIGHT, F("NMD: Night mode started."));
-
-            if ((Settings::nightFeatures & Settings::NIGHT_MOTOR_HOME) && Settings::motorMode != 0)
-            {
-                savedMotorMode      = Settings::motorMode;
-                Settings::motorMode = 0;
-                Motor::resync();
-            }
-            if ((Settings::nightFeatures & Settings::NIGHT_SFX_OFF) && !sfxSaved)
-            {
-                savedSfxRadarInterval        = Settings::sfxRadarInterval;
-                savedSfxShortCircuitInterval = Settings::sfxShortCircuitInterval;
-                savedSfxShootingStarInterval = Settings::sfxShootingStarInterval;
-                savedSfxHeartbeatInterval    = Settings::sfxHeartbeatInterval;
-                sfxSaved                     = true;
-                Settings::sfxRadarInterval        = 0;
-                Settings::sfxShortCircuitInterval = 0;
-                Settings::sfxShootingStarInterval = 0;
-                Settings::sfxHeartbeatInterval    = 0;
-            }
-            if ((Settings::nightFeatures & Settings::NIGHT_SECOND_HAND_OFF) && savedSecondHandRingMask == 0xFF)
-            {
-                savedSecondHandRingMask        = Settings::secondHand.ringMask;
-                Settings::secondHand.ringMask  = 0;
-            }
-            if ((Settings::nightFeatures & Settings::NIGHT_MARKERS_OFF) && !markersSaved)
-            {
-                savedHourMarks              = Settings::hourMarksEnabled;
-                savedQuarterMarks           = Settings::quarterMarksEnabled;
-                markersSaved                = true;
-                Settings::hourMarksEnabled    = false;
-                Settings::quarterMarksEnabled = false;
-            }
-        }
-        else
-        {
-            // ----------------------------------------------------------------
-            // Night → Day transition
-            // ----------------------------------------------------------------
-            LOG_INFO(LOG_NIGHT, F("NMD: Night mode ended."));
-
-            if ((Settings::nightFeatures & Settings::NIGHT_MOTOR_HOME) && savedMotorMode >= 0)
-            {
-                Settings::motorMode = savedMotorMode;
-                savedMotorMode      = -1;
-                Motor::resync();
-            }
-            if (sfxSaved)
-            {
-                Settings::sfxRadarInterval        = savedSfxRadarInterval;
-                Settings::sfxShortCircuitInterval = savedSfxShortCircuitInterval;
-                Settings::sfxShootingStarInterval = savedSfxShootingStarInterval;
-                Settings::sfxHeartbeatInterval    = savedSfxHeartbeatInterval;
-                sfxSaved                          = false;
-            }
-            if (savedSecondHandRingMask != 0xFF)
-            {
-                Settings::secondHand.ringMask  = savedSecondHandRingMask;
-                savedSecondHandRingMask         = 0xFF;
-            }
-            if (markersSaved)
-            {
-                Settings::hourMarksEnabled    = savedHourMarks;
-                Settings::quarterMarksEnabled = savedQuarterMarks;
-                markersSaved                  = false;
-            }
-        }
+        // Recompute effective values every cycle and trigger motor resync if
+        // the effective motor mode changed (covers both night transitions and
+        // Settings changes while night mode is active).
+        int prevMotorMode = motorMode;
+        refreshShadows();
+        if (motorMode != prevMotorMode)
+            Motor::resync();
     }
 
 } // namespace NightMode

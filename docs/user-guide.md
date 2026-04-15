@@ -294,10 +294,20 @@ Each feature is an independent checkbox:
 | Feature | Effect when active |
 |---------|-------------------|
 | **Dim LEDs** | Reduce brightness to the **Night Brightness** slider value |
-| **Disable SFX effects** | Pauses intervalls for all special effects |
+| **Disable SFX effects** | Pauses intervals for all special effects |
 | **Hide second hand** | Switch off seconds hand |
-| **Park motor at 12 o'clock** | Motor seeks to 12 o'clock and stops; mode is restored on exit |
+| **Park motor at 12 o'clock** | Motor seeks to 12 o'clock and stops |
 | **Hide ambient markers** | Hour and quarter markers are hidden |
+
+### How to identify that a feature is overridden by night mode
+
+Any feature that is currently being overridden by night mode is **highlighted with an amber border** 
+in the web interface. E.g. when the Motor tab shows Motor Mode highlighted in amber at night, the 
+displayed settings are inactive because night mode overrides them — i.e. turning the motor off.
+
+Night mode never changes your configuration. While active, it temporarily controls the affected 
+parameters — your saved values remain untouched and are displayed with an amber border. 
+They take effect again as soon as night mode ends.
 
 ---
 

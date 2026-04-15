@@ -112,6 +112,7 @@ hr { border: 0; border-top: 1px solid #333; margin: 20px 0; }
     gap: 10px;
     text-align: center;
     align-items: center;
+    min-height: 38px;
     margin-bottom: 10px;
 }
 .grid-row > div:first-child { text-align: left; }
@@ -201,12 +202,16 @@ select:focus {
     border-color: #4caf50;
 }
 
-/* SFX parameter cell (slider + value label) */
+/* SFX parameter cell (time input + value label) */
 .sfx-param {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
+}
+.sfx-param input[type="time"] {
+    width: 110px;
+    flex-shrink: 0;
 }
 .sfx-val {
     font-size: 0.8rem;
@@ -297,3 +302,13 @@ a button { width: 100%; }
 
 .status-online  { background: #1b5e20; color: #a5d6a7; }
 .status-offline { background: #4a1515; color: #ef9a9a; }
+
+/* --- Night Mode override indicator --- */
+.night-override {
+    border-left: 3px solid #FF9800;
+    background-color: rgba(255, 152, 0, 0.06);
+    padding-left: 10px;
+    border-radius: 0 4px 4px 0;
+    transition: border-color 0.3s, background-color 0.3s;
+}
+

@@ -10,6 +10,7 @@
 #include "layer_sfx.h"
 #include "renderer.h"
 #include "settings.h"
+#include "night_mode.h"
 #include "logging.h"
 #include "config.h"
 #include "color.h"
@@ -359,10 +360,10 @@ namespace SFXLayer
                 best = { interval, trigger };
         };
 
-        check(Settings::sfxShortCircuitInterval, sfxShortCircuitTrigger);
-        check(Settings::sfxRadarInterval,        sfxRadarTrigger);
-        check(Settings::sfxShootingStarInterval, sfxShootingStarTrigger);
-        check(Settings::sfxHeartbeatInterval,    sfxHeartbeatTrigger);
+        check(NightMode::sfxShortCircuitInterval, sfxShortCircuitTrigger);
+        check(NightMode::sfxRadarInterval,        sfxRadarTrigger);
+        check(NightMode::sfxShootingStarInterval, sfxShootingStarTrigger);
+        check(NightMode::sfxHeartbeatInterval,    sfxHeartbeatTrigger);
 
         if (best.trigger)
             best.trigger();

@@ -10,6 +10,7 @@ maintaining or extending this codebase.
 
 1. [Motor Homing](#1-motor-homing)
 2. [Web Interface — iOS Safari Compatibility](#2-web-interface--ios-safari-compatibility)
+3. [Night Mode — Shadow Variable Architecture](#3-night-mode--shadow-variable-architecture)
 
 ---
 
@@ -257,3 +258,92 @@ loadSettings(); // called from window.onload
 - **Never rely on the WebSocket for initial page data.** Any data that must be present when the page first renders should be loaded via HTTP GET.
 - **WebSocket is for incremental, real-time updates only.** It is fire-and-forget with no delivery guarantee when the connection is unstable.
 - **Never call `sendAllSettings()` or any other substantial I/O directly from `WS_EVT_CONNECT`.** The connection is not yet fully established at that point. See also the async-callback rule in the project feedback notes.
+
+---
+
+## 3. Night Mode — Shadow Variable Architecture
+
+### 3.1 The Problem with Direct Settings Mutation
+
+An earlier implementation applied night mode by saving affected `Settings::*` members,
+overwriting them with night values on entry, and restoring them on exit. This caused two
+problems:
+
+1. **GUI confusion** — While night mode was active, the web interface showed the night-mode
+   values (e.g. `motorMode = 0`) rather than the user's actual configuration. The user
+   could not tell whether they had configured the clock this way or whether night mode was
+   responsible.
+
+2. **Fragile save/restore** — The save and restore logic had to track each overridden variable
+   individually and was error-prone if a new variable was added or if a power cycle occurred
+   mid-window.
+
+### 3.2 The Shadow Variable Pattern
+
+`night_mode.cpp` owns a set of **effective runtime variables** in the `NightMode` namespace:
+
+```cpp
+// Declared extern in night_mode.h — defined in night_mode.cpp
+NightMode::motorMode               // 0 when NIGHT_MOTOR_HOME active
+NightMode::sfxShortCircuitInterval // 0 when NIGHT_SFX_OFF active
+NightMode::sfxRadarInterval
+NightMode::sfxShootingStarInterval
+NightMode::sfxHeartbeatInterval
+NightMode::secondHandRingMask      // 0 when NIGHT_SECOND_HAND_OFF active
+NightMode::hourMarksEnabled        // false when NIGHT_MARKERS_OFF active
+NightMode::quarterMarksEnabled
+```
+
+On every call to `NightMode::update()` (once per Arduino loop), `refreshShadows()` recomputes
+all of these from the current `Settings::*` values and the active flag:
+
+```cpp
+motorMode = (active && NIGHT_MOTOR_HOME) ? 0 : Settings::motorMode;
+// … same pattern for all other variables
+```
+
+`Settings::*` is **never modified** by night mode. It always reflects the user's intent.
+
+### 3.3 Consuming Modules
+
+Rendering and behavior modules replace their `Settings::xyz` reads with `NightMode::xyz`:
+
+| Module | Variable |
+|---|---|
+| `motor.cpp`, `time_state.cpp` | `NightMode::motorMode` |
+| `layer_sfx.cpp` | `NightMode::sfx*Interval` (×4) |
+| `layer_time.cpp` | `NightMode::secondHandRingMask` |
+| `layer_ambient.cpp` | `NightMode::hourMarksEnabled`, `NightMode::quarterMarksEnabled` |
+
+`motor_homing.cpp` is the exception: its `Settings::motorMode` reads are pure **validation
+guards** (`!= 4` checks) that test user intent, not behavioral lookups, so they correctly
+remain on `Settings`.
+
+Configuration interfaces (`webserver.cpp`, `mqtt.cpp`) also keep reading and writing
+`Settings::*` directly — they represent the user's persistent configuration, not the
+runtime state.
+
+### 3.4 Motor Resync
+
+`Motor::resync()` must be called whenever the effective motor mode changes (so the motor
+seeks to the new target or parks). `NightMode::update()` detects this automatically:
+
+```cpp
+int prevMotorMode = motorMode;
+refreshShadows();
+if (motorMode != prevMotorMode)
+    Motor::resync();
+```
+
+This covers both night mode transitions **and** user changes to `Settings::motorMode` while
+night mode is active (the shadow stays 0 in that case, so no spurious resync is triggered).
+
+### 3.5 Web GUI Indicators
+
+Because `Settings::*` is never mutated, the web interface always shows the user's
+configured values — even while night mode is active. Parameters that are currently being
+overridden by night mode are highlighted with an amber left border (CSS class
+`.night-override`, applied via `script.js` based on `nightActive` and `nightFeatures`).
+
+This allows the user to see their configuration **and** understand that it is temporarily
+suppressed, without any risk of losing their settings.
