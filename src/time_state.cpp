@@ -133,17 +133,21 @@ namespace TimeState
                 t.m = (total / 60000UL) % 60;
                 t.s = (total / 1000UL) % 60;
                 break;
-            case 1: // Grid mode: ¼h → 48 grids
+            case 1: // Grid mode: 1/5h → 60 grids (aligns with min/sec grid)
+                t.m = (total / 60000UL) % 60;
+                t.m -= t.m % 12;
+                break;
+            case 2: // Grid mode: ¼h → 48 grids
                 t.m = (total / 60000UL) % 60;
                 t.m -= t.m % 15;
                 break;
-            case 2: // Grid mode: ½h → 24 grids
+            case 3: // Grid mode: ½h → 24 grids
                 t.m = (total / 60000UL) % 60;
                 t.m -= t.m % 30;
                 break;
-            case 3: // Grid mode: 1h → 12 grids
+            case 4: // Grid mode: 1h → 12 grids
                 break;
-            case 4: // Grid mode: 3h → 4 grids
+            case 5: // Grid mode: 3h → 4 grids
                 t.h -= t.h % 3;
                 break;
             }
@@ -225,10 +229,11 @@ namespace TimeState
         case 1: // hours
             switch (Settings::motorGrid)
             {
-            case 1: period =  15UL * 60000UL; break; // ¼h
-            case 2: period =  30UL * 60000UL; break; // ½h
-            case 3: period =       3600000UL; break; // 1h
-            case 4: period =   3UL * 3600000UL; break; // 3h
+            case 1: period =  12UL * 60000UL;   break; // 1/5h
+            case 2: period =  15UL * 60000UL;   break; // ¼h
+            case 3: period =  30UL * 60000UL;   break; // ½h
+            case 4: period =        3600000UL;  break; // 1h
+            case 5: period =  3UL * 3600000UL;  break; // 3h
             }
             break;
         case 2: // minutes
