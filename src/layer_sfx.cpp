@@ -291,6 +291,8 @@ namespace SFXLayer
             uint16_t pos     = (uint16_t)((RING_LEDS[0] * elapsed) / 1024);
             if (pos < RING_LEDS[0] - 1)
                 next = min(next, starState.startTime + (uint32_t)(pos + 1) * 1024 / RING_LEDS[0]);
+            else
+                next = min(next, starState.startTime + 1024); // schedule deactivation frame
         }
 
         return next;
