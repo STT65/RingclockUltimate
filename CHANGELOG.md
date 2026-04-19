@@ -7,28 +7,37 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [1.1.0] - 2026-04-19
+
 ### Added
 
-- Motor hours grid option `1/5h` (12-minute intervals, 60 positions/revolution) — aligns
-  the hours grid with the native 60-position grid used by Minutes and Seconds modes.
-- Night mode shadow variables: `night_mode.cpp` exposes effective runtime variables
-  (`NightMode::motorMode`, `NightMode::autoBrightness`, etc.) recomputed every loop.
-  Settings are never mutated; all values restore automatically when the night window ends.
-- Web GUI amber indicators — parameters currently overridden by night mode are highlighted
-  with an amber left border, updating within one second of a state change.
-- `POST /upload` endpoint for restoring config files (`settings.json`, `mqtt.json`,
-  `homing.json`) after a LittleFS reflash.
-- Reload button (⟳) in the web GUI header for iOS home-screen web app users.
+- Motor hours grid option `1/5h` (12-minute steps) — the finest available resolution,
+  matching the native 60-position grid of Minutes and Seconds modes.
+- Config files (`settings.json`, `mqtt.json`, `homing.json`) are now bundled in the
+  LittleFS image, so the device starts with defaults after a fresh flash.
+- `POST /upload` endpoint — config files can now be backed up and restored around a
+  LittleFS reflash. See *Development Guide → OTA Update* for the procedure.
+- Web GUI: amber highlight on any setting currently suppressed by Night Mode, so you
+  know at a glance what Night Mode is overriding.
+- Web GUI: Reload button (⟳) in the header, useful for iOS home-screen web app users.
 
 ### Changed
 
-- `motorGridH` index values renumbered: `1/5h` inserted at position 1; ¼h…3h shifted
-  from 1–4 to 2–5. **Existing configs with a non-zero Hours grid must be reconfigured.**
-- All consuming modules (`motor.cpp`, `time_state.cpp`, `layer_*.cpp`, `brightness.cpp`)
-  now read `NightMode::` shadow variables instead of `Settings::` directly.
+- Night Mode now applies its overrides at runtime without touching saved settings —
+  everything reverts automatically when the night window ends.
+- SFX trigger intervals replaced with a time picker (`HH:MM`) instead of a slider.
+  Intervals are aligned to midnight; e.g. `01:00` fires every hour on the hour,
+  `14:00` fires once a day at 14:00.
+- `motorGridH` index values renumbered: `1/5h` inserted at position 1; previous values
+  1–4 shift to 2–5. **Existing configs with a non-zero Hours grid must be reconfigured.**
 
 ### Fixed
 
+- Shooting Star: the last LED in the animation stayed lit until the next regular tick.
+  It now turns off correctly at animation end.
+- Web GUI: reconnect after a disconnect was unreliable.
 - Documentation incorrectly stated that config files survive a LittleFS OTA flash.
 
 ---

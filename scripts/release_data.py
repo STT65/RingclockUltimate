@@ -1,17 +1,20 @@
 """
 release_data.py — PlatformIO pre-build script for the 'release' environment.
 
-Processes data/script.js before the LittleFS image is built:
-  - WS URL:    removes hardcoded dev line (ws://x.x.x.x/ws)
-               uncomments production line  (location.host)
-  - fetch URL: removes hardcoded dev line (http://x.x.x.x/settings)
-               uncomments production line  (/settings)
+Processes data/ files before the LittleFS image is built:
+  - script.js:
+      WS URL:    removes hardcoded dev line (ws://x.x.x.x/ws)
+                 uncomments production line  (location.host)
+      fetch URL: removes hardcoded dev line (http://x.x.x.x/settings)
+                 uncomments production line  (/settings)
+  - mqtt.json:   sets mqttEnabled to false (dev default may differ)
 
-The original source file is never modified. A temporary copy of the entire
+The original source files are never modified. A temporary copy of the entire
 data/ directory is written to .pio/release_data/ and the filesystem builder
 is pointed there instead.
 """
 
+import json
 import re
 import os
 import shutil
@@ -72,6 +75,18 @@ def _process_release_data(source, target, env):
         f.write(content)
 
     print(f"[release_data] Patched script.js → {dest_data}")
+
+    # Patch mqtt.json — disable MQTT in release image
+    mqtt_path = os.path.join(dest_data, "mqtt.json")
+    if os.path.exists(mqtt_path):
+        with open(mqtt_path, "r", encoding="utf-8") as f:
+            mqtt = json.load(f)
+        mqtt["mqttEnabled"] = False
+        with open(mqtt_path, "w", encoding="utf-8") as f:
+            json.dump(mqtt, f)
+        print(f"[release_data] Patched mqtt.json (mqttEnabled=false) → {dest_data}")
+    else:
+        print("[release_data] WARNING: data/mqtt.json not found — skipping patch")
 
     # Point the filesystem builder at the processed directory
     env.Replace(PROJECTDATA_DIR=dest_data)
