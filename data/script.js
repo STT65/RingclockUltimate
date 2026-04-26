@@ -280,7 +280,7 @@ function updateUI(data) {
     // Motor
     if (data.motorMode !== undefined || data.motorGrid !== undefined) {
         const mode = data.motorMode !== undefined ? data.motorMode : parseInt(motorMode.value);
-        const steps = data.motorGrid !== undefined ? data.motorGrid : 0;
+        const steps = data.motorGrid !== undefined ? data.motorGrid : getActiveMotorGrid();
         motorMode.value = mode;
         updateMotorGridUI(mode, steps);
     }
@@ -290,15 +290,11 @@ function updateUI(data) {
     // Motor ramp monitor
     if (data.rampDurationMs !== undefined) {
         const dur = data.rampDurationMs;
-        const steps = data.rampStepsTotal;
-        const missed = data.rampMissedSteps;
         const mode = parseInt(motorMode.value);
         const interval = calcGridIntervalMs(mode, getActiveMotorGrid());
 
         document.getElementById('gridInterval').textContent = interval ? formatMs(interval) : '–';
         document.getElementById('rampDurationVal').textContent = dur + ' ms';
-        document.getElementById('rampStepsVal').textContent = steps + ' steps';
-        document.getElementById('rampMissedVal').textContent = missed !== 0 ? missed + ' ⚠️' : '0 ✓';
 
         const warning = document.getElementById('motorWarning');
         if (interval && dur > interval * 0.8) {
@@ -322,7 +318,7 @@ function updateUI(data) {
         const statusRow = document.getElementById('homingStatusRow');
         if (statusRow) statusRow.style.display = autoHomingActive ? 'flex' : 'none';
         const mode = parseInt(document.getElementById('motorMode')?.value || '0');
-        const stepsValue = parseInt(document.getElementById('motorGrid')?.value || '0');
+        const stepsValue = getActiveMotorGrid();
         updateMotorGridUI(mode, stepsValue);
     }
     if (data.homingState !== undefined) {
@@ -576,7 +572,7 @@ window.onload = () => {
         const statusRow = document.getElementById('homingStatusRow');
         if (statusRow) statusRow.style.display = autoHomingActive ? 'flex' : 'none';
         const mode = parseInt(document.getElementById('motorMode')?.value || '0');
-        const stepsValue = parseInt(document.getElementById('motorGrid')?.value || '0');
+        const stepsValue = getActiveMotorGrid();
         updateMotorGridUI(mode, stepsValue);
     };
     logLevel.onchange   = e => send({ logLevel:   Number(e.target.value) });

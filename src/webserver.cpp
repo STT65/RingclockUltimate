@@ -102,8 +102,6 @@ void sendMonitoring()
     if (rs.valid)
     {
         doc["rampDurationMs"] = rs.durationMs;
-        doc["rampStepsTotal"] = rs.stepsTotal;
-        doc["rampMissedSteps"] = rs.missedSteps;
     }
 
     doc["nightActive"] = NightMode::isActive();
@@ -676,6 +674,8 @@ void WebServer::update()
         return;
     // Schedule next call 20ms after the start of the next second (NTP-synchronised)
     next = now + (1020 - TimeState::get().ms);
+
+    ws.cleanupClients(2); // release zombie WS clients (e.g. iOS Safari silent disconnect)
 
     if (WiFiSetup::isAPMode)
         processWifiScan(); // AP mode: Wi-Fi scan only

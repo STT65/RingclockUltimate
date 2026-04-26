@@ -464,8 +464,7 @@
                         <h3 style="margin-bottom:8px;">Grid Mode Monitor</h3>
                         <div class="row"><label>Grid interval:</label><span id="gridInterval">–</span></div>
                         <div class="row"><label>Ramp duration:</label><span id="rampDurationVal">–</span></div>
-                        <div class="row"><label>Steps moved:</label><span id="rampStepsVal">–</span></div>
-                        <div class="row"><label>Missed steps:</label><span id="rampMissedVal">–</span></div>
+
                         <div id="motorWarning" class="warning-box" style="display:none;margin-top:10px;">
                             ⚠️ <strong>Warning:</strong> The last ramp took <span id="warnDuration"></span> ms but the
                             grid
@@ -710,11 +709,11 @@
             <div class="row">
                 <label title="Maximum current (mA) allowed for the LEDs. Brightness is throttled if exceeded.">Power
                     Limit (mA):</label>
-                <input type="number" id="powerLimit" min="1000" max="5000" step="250" class="field-sm">
+                <input type="number" id="powerLimit" min="1000" max="5000" step="250" class="field-md">
             </div>
             <div class="row">
                 <label title="Serial log verbosity (0=Off, 3=Debug).">Log Level:</label>
-                <select id="logLevel" class="field-sm">
+                <select id="logLevel" class="field-md">
                     <option value="0">0 - Off</option>
                     <option value="1">1 - Errors</option>
                     <option value="2">2 - Info</option>
@@ -723,29 +722,29 @@
             </div>
             <div class="row">
                 <label title="Timezone with automatic DST support.">Timezone:</label>
-                <select id="timezone" class="field-fixed">
+                <select id="timezone" class="field-md">
                     <option value="GMT0">UTC / GMT</option>
-                    <option value="WET0WEST,M3.5.0/1,M10.5.0">Western Europe (Portugal, UK)</option>
-                    <option value="CET-1CEST,M3.5.0,M10.5.0/3">Central Europe (DE, FR, IT, …)</option>
-                    <option value="EET-2EEST,M3.5.0/3,M10.5.0/4">Eastern Europe (GR, FI, EE, …)</option>
+                    <option value="WET0WEST,M3.5.0/1,M10.5.0">W. Europe (PT, UK)</option>
+                    <option value="CET-1CEST,M3.5.0,M10.5.0/3">C. Europe (DE, FR, IT…)</option>
+                    <option value="EET-2EEST,M3.5.0/3,M10.5.0/4">E. Europe (GR, FI, EE…)</option>
                     <option value="MSK-3">Moscow (no DST)</option>
                     <option value="EST5EDT,M3.2.0,M11.1.0">US Eastern</option>
                     <option value="CST6CDT,M3.2.0,M11.1.0">US Central</option>
                     <option value="MST7MDT,M3.2.0,M11.1.0">US Mountain</option>
-                    <option value="MST7">US Mountain (Arizona, no DST)</option>
+                    <option value="MST7">US Mountain (AZ, no DST)</option>
                     <option value="PST8PDT,M3.2.0,M11.1.0">US Pacific</option>
-                    <option value="AST4ADT,M3.2.0,M11.1.0">US Atlantic / Canada Atlantic</option>
+                    <option value="AST4ADT,M3.2.0,M11.1.0">US / Canada Atlantic</option>
                     <option value="NST3:30NDT,M3.2.0,M11.1.0">Newfoundland</option>
-                    <option value="BRT3">Brazil (Brasilia, no DST)</option>
+                    <option value="BRT3">Brazil (no DST)</option>
                     <option value="ART3">Argentina (no DST)</option>
                     <option value="IST-5:30">India (no DST)</option>
                     <option value="PKT-5">Pakistan (no DST)</option>
                     <option value="ICT-7">Indochina (TH, VN, no DST)</option>
                     <option value="CST-8">China / Singapore (no DST)</option>
                     <option value="JST-9">Japan / Korea (no DST)</option>
-                    <option value="AEST-10AEDT,M10.1.0,M4.1.0/3">Australia Eastern (NSW, VIC)</option>
+                    <option value="AEST-10AEDT,M10.1.0,M4.1.0/3">Australia East (NSW, VIC)</option>
                     <option value="ACST-9:30ACDT,M10.1.0,M4.1.0/3">Australia Central (SA)</option>
-                    <option value="AWST-8">Australia Western (no DST)</option>
+                    <option value="AWST-8">Australia West (no DST)</option>
                     <option value="NZST-12NZDT,M9.5.0,M4.1.0/3">New Zealand</option>
                 </select>
             </div>

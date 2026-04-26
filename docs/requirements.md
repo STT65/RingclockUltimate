@@ -270,8 +270,6 @@ clients:
 | `mqttConnected` | MQTT connection status |
 | `nightActive` | Night mode currently active |
 | `rampDurationMs` | Grid-mode ramp duration [ms] (only after first ramp) |
-| `rampStepsTotal` | Total steps in last ramp |
-| `rampMissedSteps` | Missed steps in last ramp |
 | `homingState` | Homing state: idle/travel/measure/done/error (only when `MOTOR_AH_EN = 1`) |
 
 ### Serial Logging — Runtime Control

@@ -127,7 +127,7 @@ namespace Motor
     //  the configured speed/acceleration is too low for the selected grid.
     // -------------------------------------------------------------------------
 
-    static RampStats lastRampStats = {0, 0, 0, false};
+    static RampStats lastRampStats = {0, false};
 
     // -------------------------------------------------------------------------
     //  Public helper
@@ -457,10 +457,8 @@ namespace Motor
             rampRunning = false;
             // Capture ramp statistics for the monitor / web interface warning
             lastRampStats.durationMs = millis() - rampStartMs;
-            lastRampStats.stepsTotal = (uint16_t)rampStepsDone;
-            lastRampStats.missedSteps = circularError(rampTargetPos, isrCurrentPos);
             lastRampStats.valid = true;
-            LOG_DEBUG(LOG_MOT, String(F("MOT: RampReady with RampSteps=")) + lastRampStats.stepsTotal + F(", RampDuration=") + lastRampStats.durationMs + F("ms, RampMiss=") + lastRampStats.missedSteps);
+            LOG_DEBUG(LOG_MOT, String(F("MOT: RampReady RampDuration=")) + lastRampStats.durationMs + F("ms"));
             return;
         }
         rampStepsDone++;

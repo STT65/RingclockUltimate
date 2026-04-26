@@ -33,7 +33,7 @@
 
 
 
-#define MOTOR_STEP_PULSE_STRETCH 0// Lengthen the high-pulse at PIN_MOTOR_STEP from 125ns to 1µs.
+#define MOTOR_STEP_PULSE_STRETCH 1// Lengthen the high-pulse at PIN_MOTOR_STEP from 125ns to 1µs.
 #define MOTOR_SEEK_SPEED 600 // 100..600 steps/s fixed seek-speed
 
 // AH = Automatic Homing, based on position detection via a magnet in the rotor and a hall sensor at case

@@ -116,8 +116,6 @@ namespace Motor
     struct RampStats
     {
         uint32_t durationMs; // Total duration of the last ramp [ms].
-        uint16_t stepsTotal; // Number of steps in the last ramp.
-        int16_t missedSteps; // Position error at ramp end in steps (should be 0).
         bool valid;          // true once at least one ramp has completed since boot.
     };
 
