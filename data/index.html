@@ -309,6 +309,18 @@
                     <label><input type="checkbox" class="ring-mask-check" data-hand="h" data-bit="2"> Ring 3</label>
                 </div>
             </div>
+
+            <div class="info-box">
+                <p>Each hand is rendered as a single bright pixel with optional fading tails in both directions:</p>
+                <ul>
+                    <li><strong>HAND COLOR</strong> — color of the main hand pixel.</li>
+                    <li><strong>TAIL START</strong> — color immediately adjacent to the hand pixel; the starting color of both tails.</li>
+                    <li><strong>BACK END</strong> — color at the tip of the backward tail (trailing direction).</li>
+                    <li><strong>FWD END</strong> — color at the tip of the forward tail (leading direction).</li>
+                    <li><strong>BACK LENGTH / FWD LENGTH</strong> — number of pixels for each tail (0 = disabled, 1–10 = fixed length, 11 = fill mode: tail always extends to 12 o'clock).</li>
+                    <li><strong>RING 1 / RING 2 / RING 3</strong> — selects which LED rings display this hand. Assigning hands to separate rings avoids color mixing when they overlap.</li>
+                </ul>
+            </div>
         </section>
 
         <section id="sfx" class="tab-content card">
@@ -556,49 +568,65 @@
                 <label title="Enable automatic night mode during a specific time window.">
                     <input type="checkbox" id="nightModeEnabled"> Enable Night Mode
                 </label>
-            </div>
-            <div class="row">
-                <label title="Time when night mode starts.">Start:</label>
-                <input type="time" id="nightStart">
-            </div>
-            <div class="row">
-                <label title="Time when night mode ends.">End:</label>
-                <input type="time" id="nightEnd">
-            </div>
-            <div class="row">
-                <label>Currently active:</label>
-                <span id="nightActiveStatus">-</span>
+                <span id="nightActiveStatus" class="status-badge status-offline" style="display:none;">Inactive</span>
             </div>
 
-            <h3>Features during night window</h3>
-            <div class="row">
-                <label title="Dim LEDs to the configured brightness level.">
-                    <input type="checkbox" id="nightDimLeds"> Dim LEDs
-                </label>
-                <span id="nightDimGroup" class="inline-slider">
-                    <input type="range" id="nightBrightness" value="0" min="0" max="255">
-                    <span id="nightBrightnessVal">0</span>
-                </span>
+            <div id="nightOffInfo" class="info-box" style="display:none;">
+                <p>Each day, during a scheduled time window, features can be individually modified for night mode.</p>
             </div>
-            <div class="row">
-                <label title="Disable all SFX effects (radar, shooting star, heartbeat, short circuit).">
-                    <input type="checkbox" id="nightSfxOff"> Disable SFX effects
-                </label>
-            </div>
-            <div class="row">
-                <label title="Hide the second hand for a quieter display.">
-                    <input type="checkbox" id="nightSecondHandOff"> Hide second hand
-                </label>
-            </div>
-            <div class="row">
-                <label title="Park the stepper motor at 12 o'clock and stop it.">
-                    <input type="checkbox" id="nightMotorHome"> Park motor at 12 o'clock
-                </label>
-            </div>
-            <div class="row">
-                <label title="Hide hour and quarter-hour ambient markers.">
-                    <input type="checkbox" id="nightMarkersOff"> Hide ambient markers
-                </label>
+
+            <div id="nightEnabledPanel" style="display:none;">
+                <div class="row">
+                    <label title="Time when night mode starts.">Start:</label>
+                    <input type="time" id="nightStart">
+                </div>
+                <div class="row">
+                    <label title="Time when night mode ends.">End:</label>
+                    <input type="time" id="nightEnd">
+                </div>
+
+                <h3>Features during night window</h3>
+                <div class="row">
+                    <label title="Use special brightness for the night.">
+                        <input type="checkbox" id="nightDimLeds"> Night brightness
+                    </label>
+                    <span id="nightDimGroup" class="inline-slider">
+                        <input type="range" id="nightBrightness" value="0" min="0" max="255">
+                        <span id="nightBrightnessVal">0</span>
+                    </span>
+                </div>
+                <div class="row">
+                    <label title="Disable all SFX effects (radar, shooting star, heartbeat, short circuit).">
+                        <input type="checkbox" id="nightSfxOff"> Disable SFX effects
+                    </label>
+                </div>
+                <div class="row">
+                    <label title="Hide the second hand for a quieter display.">
+                        <input type="checkbox" id="nightSecondHandOff"> Hide second hand
+                    </label>
+                </div>
+                <div class="row">
+                    <label title="Park the stepper motor at 12 o'clock and stop it.">
+                        <input type="checkbox" id="nightMotorHome"> Park motor at 12 o'clock
+                    </label>
+                </div>
+                <div class="row">
+                    <label title="Hide hour and quarter-hour ambient markers.">
+                        <input type="checkbox" id="nightMarkersOff"> Hide ambient markers
+                    </label>
+                </div>
+
+                <div class="info-box">
+                    <p>Each day, during the scheduled time window defined by <strong>Start</strong> and <strong>End</strong> 
+                        , the following features can be individually modified for night mode:</p>
+                    <ul>
+                        <li><strong>Night brightness</strong> — adjust brightness via the slider value, overriding the system-brightness setting.</li>
+                        <li><strong>Disable SFX</strong> — suppresses all scheduled effects (radar, shooting star, heartbeat, short circuit).</li>
+                        <li><strong>Hide second hand</strong> — turns off the second-hand layer for a more static display.</li>
+                        <li><strong>Park motor</strong> — drives the stepper to 12 o'clock and powers it down for the night.</li>
+                        <li><strong>Hide ambient markers</strong> — removes the hour and quarter-hour background markers.</li>
+                    </ul>
+                </div>
             </div>
         </section>
 

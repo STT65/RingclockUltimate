@@ -211,6 +211,13 @@ function timeToMinutes(t) {
     return h * 60 + m;
 }
 
+function updateNightModePanel(enabled) {
+    document.getElementById('nightEnabledPanel').style.display = enabled ? 'block' : 'none';
+    document.getElementById('nightOffInfo').style.display      = enabled ? 'none'  : 'block';
+    const badge = document.getElementById('nightActiveStatus');
+    badge.style.display = enabled ? 'inline-block' : 'none';
+}
+
 function updateNightOverrides() {
     const mark = (ids, active) => {
         ids.forEach(id => {
@@ -340,12 +347,17 @@ function updateUI(data) {
     }
 
     // Night mode
-    if (data.nightModeEnabled !== undefined) nightModeEnabled.checked = data.nightModeEnabled;
-    if (data.nightStart       !== undefined) nightStart.value         = minutesToTimeString(data.nightStart);
-    if (data.nightEnd         !== undefined) nightEnd.value           = minutesToTimeString(data.nightEnd);
+    if (data.nightModeEnabled !== undefined) {
+        nightModeEnabled.checked = data.nightModeEnabled;
+        updateNightModePanel(data.nightModeEnabled);
+    }
+    if (data.nightStart !== undefined) nightStart.value = minutesToTimeString(data.nightStart);
+    if (data.nightEnd   !== undefined) nightEnd.value   = minutesToTimeString(data.nightEnd);
     if (data.nightActive !== undefined) {
         _nightActive = data.nightActive;
-        nightActiveStatus.textContent = data.nightActive ? 'Active' : 'Inactive';
+        const badge = document.getElementById('nightActiveStatus');
+        badge.textContent = data.nightActive ? 'Active' : 'Inactive';
+        badge.className   = 'status-badge ' + (data.nightActive ? 'status-online' : 'status-offline');
     }
     if (data.nightFeatures !== undefined) {
         _nightFeatures = data.nightFeatures;
@@ -525,7 +537,10 @@ window.onload = () => {
     if (btnHoming) btnHoming.onclick = () => send({ command: 'motorStartHoming' });
 
     // Night mode
-    nightModeEnabled.onchange = e => send({ nightModeEnabled: e.target.checked });
+    nightModeEnabled.onchange = e => {
+        updateNightModePanel(e.target.checked);
+        send({ nightModeEnabled: e.target.checked });
+    };
     nightStart.onchange       = e => send({ nightStart:       timeStringToMinutes(e.target.value) });
     nightEnd.onchange         = e => send({ nightEnd:         timeStringToMinutes(e.target.value) });
 
