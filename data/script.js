@@ -402,6 +402,11 @@ function updateUI(data) {
     if (data.uptime     !== undefined) uptimeVal.textContent    = formatUptime(data.uptime);
     if (data.localTime  !== undefined) document.getElementById('localTimeVal').textContent = data.localTime;
     if (data.powerLimit !== undefined) powerLimit.value = data.powerLimit;
+    if (data.logLevelMax !== undefined) {
+        logLevel.querySelectorAll('option').forEach(opt => {
+            opt.disabled = Number(opt.value) > data.logLevelMax;
+        });
+    }
     if (data.logLevel   !== undefined) logLevel.value   = data.logLevel;
     if (data.timezone !== undefined) {
         const sel = document.getElementById('timezone');

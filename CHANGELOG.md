@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Motor: in AP mode the stepper driver was erroneously energised and the hardware
+  timer ISR attached, causing the motor to spin endlessly without completing the
+  homing procedure. The motor is now kept disabled until the device connects to a
+  Wi-Fi network. An external pull-up on the EN pin is required to hold the driver
+  off from power-on until the firmware takes control (see Wiring Guide).
+
 ---
 
 ## [1.1.0] - 2026-04-19

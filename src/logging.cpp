@@ -12,7 +12,7 @@
 
 namespace Log
 {
-    static Level currentLevel = LOG_DEBUG; // Active log level; default is LOG_DEBUG.
+    static Level currentLevel = (Level)LOG_LEVEL_DEFAULT; // Active log level; mirrors compile-time floor.
 
     void setLevel(Level lvl)
     {

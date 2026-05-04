@@ -42,9 +42,10 @@ namespace MQTT
     static WiFiClient   wifiClient;
     static PubSubClient mqttClient(wifiClient);
 
-    static uint32_t lastReconnectMs = 0; // Timestamp of the last connection attempt.
-    static uint32_t lastMonitorMs   = 0; // Timestamp of the last status publish.
+    static uint32_t lastReconnectMs  = 0;     // Timestamp of the last connection attempt.
+    static uint32_t lastMonitorMs    = 0;     // Timestamp of the last status publish.
     static bool     pendingPublishAll = false; // Set by requestPublishAll(); consumed in update().
+    static uint8_t  connectRetries   = 0;     // Consecutive failed connect attempts.
 
     // -------------------------------------------------------------------------
     //  Internal helpers
@@ -283,6 +284,13 @@ namespace MQTT
 
         LOG_INFO(LOG_MQTT, F("MQT: Connecting to broker "), Settings::mqttBroker + ":" + Settings::mqttPort);
 
+        wifiClient.setTimeout(MQTT_TCP_TIMEOUT_MS / 1000); // WiFiClient::setTimeout takes seconds
+        if (!wifiClient.connect(Settings::mqttBroker.c_str(), (uint16_t)Settings::mqttPort))
+        {
+            LOG_ERROR(LOG_MQTT, F("MQT: TCP connect timeout"));
+            return false;
+        }
+
         bool ok;
         if (Settings::mqttUser.length() > 0)
             ok = mqttClient.connect(clientId.c_str(),
@@ -331,6 +339,7 @@ namespace MQTT
         mqttClient.setServer(Settings::mqttBroker.c_str(), Settings::mqttPort);
         mqttClient.setCallback(onMessage);
         mqttClient.setBufferSize(512); // larger buffer for settings payloads
+        connectRetries = 0;
 
         LOG_INFO(LOG_MQTT, F("MQT: MQTT client initialised."));
     }
@@ -343,14 +352,22 @@ namespace MQTT
         // Maintain connection — reconnect with backoff if disconnected
         if (!mqttClient.connected())
         {
+            if (connectRetries >= MQTT_MAX_RETRIES)
+                return; // broker unreachable — gave up after MQTT_MAX_RETRIES attempts
+
             uint32_t now = millis();
             if (now - lastReconnectMs >= MQTT_RECONNECT_INTERVAL_MS)
             {
                 lastReconnectMs = now;
-                connectToBroker();
+                if (connectToBroker())
+                    connectRetries = 0;
+                else if (++connectRetries >= MQTT_MAX_RETRIES)
+                    LOG_ERROR(LOG_MQTT, F("MQT: Broker unreachable — giving up after "), String(MQTT_MAX_RETRIES) + F(" attempts. Reboot to retry."));
             }
             return;
         }
+
+        connectRetries = 0; // reset on established connection
 
         mqttClient.loop();
 

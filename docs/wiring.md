@@ -94,6 +94,10 @@ A **74HCT125** quad buffer is used as a level shifter between the D1 Mini's
   Note: Place a 1000 µF capacitor across VMOT/GND on the driver board.
         Set current limit via the driver's trim potentiometer.
         MOTOR_STEPS_PER_REV = 3200 → 1/16 microstepping assumed.
+        **The EN pin (D7) requires an external pull-up resistor (e.g. 10 kΩ to 3V3).**
+        EN is active-low; without the pull-up, the driver enables immediately at
+        power-on — before the firmware can assert the pin — causing uncontrolled
+        motor movement during the boot phase and in AP mode.
 ```
 
 ---

@@ -46,6 +46,7 @@
 #include "time_state.h"
 #include "logging.h"
 #include "night_mode.h"
+#include "wifi_setup.h"
 
 #if MOTOR_AH_EN
 #include "motor_homing.h"
@@ -532,6 +533,10 @@ namespace Motor
         pinMode(PIN_MOTOR_STEP, OUTPUT);
         pinMode(PIN_MOTOR_DIR, OUTPUT);
         pinMode(PIN_MOTOR_EN, OUTPUT);
+
+        if (WiFiSetup::isAPMode)
+            return; // motor stays disabled (external pull-up on EN); ISR not attached
+
         digitalWrite(PIN_MOTOR_EN, LOW); // enable motor driver
         timer1_attachInterrupt(motorISR);
         LOG_INFO(LOG_MOT, F("MOT: Motor initialized"));

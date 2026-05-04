@@ -68,7 +68,7 @@ uint8_t Settings::nightFeatures    = Settings::NIGHT_DIM_LEDS; // dim LEDs on by
 
 // System
 int Settings::powerLimit = 2000;
-int Settings::logLevel = 2;
+int Settings::logLevel = LOG_LEVEL_DEFAULT;
 String Settings::timezone = "CET-1CEST,M3.5.0,M10.5.0/3"; // Central Europe
 
 // MQTT
@@ -184,6 +184,8 @@ void Settings::load()
     powerLimit = sy["powerLimit"] | powerLimit;
     logLevel   = sy["logLevel"]   | logLevel;
     timezone   = sy["timezone"]   | timezone;
+
+    Log::setLevel((Log::Level)logLevel); // apply persisted log level immediately
 }
 
 /**

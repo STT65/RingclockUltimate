@@ -143,7 +143,8 @@ static void buildSettingsJson(String &out)
     doc["autoMax"] = Settings::autoMax;
     doc["autoLuxMax"] = Settings::autoLuxMax;
     doc["powerLimit"] = Settings::powerLimit;
-    doc["logLevel"] = (int)Log::getLevel();
+    doc["logLevel"]    = (int)Log::getLevel();
+    doc["logLevelMax"] = LOG_LEVEL_DEFAULT; // compile-time floor — options above this are compiled out
     doc["timezone"] = Settings::timezone;
 
     // Ambient

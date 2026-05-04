@@ -427,6 +427,11 @@ Higher layers override the pixels they occupy.
 | Stepper motor DIR | D6 | GPIO12 |
 | Stepper motor EN | D7 | GPIO13 |
 
+The stepper motor EN pin (D7 / GPIO13) is active-low and **must have an external
+pull-up resistor** (e.g. 10 kΩ to 3V3). This keeps the motor driver disabled from
+the moment power is applied — before the firmware asserts the pin — and also during
+AP mode, where the motor is intentionally never activated.
+
 All LED rings share a single data line (D4). GPIO2 doubles as UART1 TX, used by NeoPixelBus
 for interrupt-safe async output. Only seven pins are used; D0, D8, and a microstepping (MS) pin
 are not assigned.

@@ -39,7 +39,7 @@
 // AH = Automatic Homing, based on position detection via a magnet in the rotor and a hall sensor at case
 // Set MOTOR_AH_EN to 0 if you don't like to install the magnet/hall sensor 
 #define MOTOR_AH_EN 1           // Compile the AutoHoming code
-#define MOTOR_AH_SPEED 100      // steps/s during homing passes (slower = more precise edge detection)
+#define MOTOR_AH_SPEED 100      // steps/s during measurement (slower = more precise edge detection)
 #define MOTOR_AH_PASSES 3       // number of sensor overruns; must be >= 1
 #define MOTOR_AH_OVERSHOOT 150  // steps past magnet zone exit before reversing
 #define MOTOR_AH_WDT_MS 60000UL // Watchdog time [ms] — abort homing if no Hall signal is detected within this time
@@ -58,14 +58,14 @@
 #define LED_UART_METHOD NeoEsp8266AsyncUart1800KbpsMethod
 
 /// @brief Number of LED rings chained on the data line (1–3).
-#define MAX_RINGS 3
+#define MAX_RINGS 2
 
 /// @brief Number of LEDs per ring, one entry per ring (index 0..MAX_RINGS-1).
 /// Each value must be divisible by 12 (required for hour and quarter markers)
 /// and in the range 12–240.
 /// Common values: 60 (standard WS2812B ring), 120, 240.
-/// Example for two rings: { 60, 12 }
-constexpr uint8_t RING_LEDS[MAX_RINGS] = {60, 12, 12};
+/// Example for two rings: { 60, 24 }
+constexpr uint8_t RING_LEDS[MAX_RINGS] = {60, 24};
 
 // ---- Derived compile-time constants (do not edit) ----
 
@@ -146,6 +146,10 @@ static_assert(RingConfig::ringLedsValid(),
 #define MOTOR_SPEED_DEFAULT 800
 #define MOTOR_ACCELERATION_DEFAULT 400
 
+// MQTT
+#define MQTT_TCP_TIMEOUT_MS 1000 // TCP connect timeout per attempt [ms]
+#define MQTT_MAX_RETRIES    5    // Give up reconnecting after this many consecutive failures
+
 //  Wi-Fi & web interface
 #define WIFI_SSID "Ringclock-Ultimate" // will be extended with a 4 digit MAC suffix
 #define AP_SSID "Ringclock-Ultimate"   // will be extended with a 4 digit MAC suffix
@@ -177,7 +181,7 @@ static_assert(RingConfig::ringLedsValid(),
 #define LOG_LEVEL_INFO 2
 #define LOG_LEVEL_DEBUG 3
 
-#define LOG_LEVEL_DEFAULT LOG_LEVEL_DEBUG
+#define LOG_LEVEL_DEFAULT LOG_LEVEL_ERROR
 #define LOG_TIMESTAMP 1  // 1 = prepend millis() timestamp to every log line, e.g. [DEBUG]@123456
 
 // Per-module log enable (1 = on, 0 = off).
@@ -187,16 +191,16 @@ static_assert(RingConfig::ringLedsValid(),
 #define LOG_MOT   1   // motor.cpp
 #define LOG_HOM   1   // motor_homing.cpp
 #define LOG_WEB   1   // webserver.cpp
-#define LOG_MQTT  0   // mqtt.cpp
-#define LOG_TIME  0   // time_state.cpp
-#define LOG_SET   0   // settings.cpp
-#define LOG_REN   0   // renderer.cpp
-#define LOG_SFX   0   // layer_sfx.cpp
-#define LOG_BRI   0   // brightness.cpp
-#define LOG_NIGHT 0   // night_mode.cpp
-#define LOG_PWR   0   // power_limiter.cpp
-#define LOG_OTA   0   // ota_update.cpp
-#define LOG_CAP   0   // captive_portal.cpp
+#define LOG_MQTT  1   // mqtt.cpp
+#define LOG_TIME  1   // time_state.cpp
+#define LOG_SET   1   // settings.cpp
+#define LOG_REN   1   // renderer.cpp
+#define LOG_SFX   1   // layer_sfx.cpp
+#define LOG_BRI   1   // brightness.cpp
+#define LOG_NIGHT 1   // night_mode.cpp
+#define LOG_PWR   1   // power_limiter.cpp
+#define LOG_OTA   1   // ota_update.cpp
+#define LOG_CAP   1   // captive_portal.cpp
 
 //  Power limiting
 
